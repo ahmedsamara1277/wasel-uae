@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>واصل الإمارات — Wasel UAE</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<!-- Chart.js (for admin dashboard) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Mapbox GL JS (for live tracking) -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.5.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.5.2/mapbox-gl.js"></script>
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primaryGreen: '#006C35',
+        primaryGreenDark: '#004D26',
+        primaryGreenLight: '#E8F5E9',
+        gold: '#D4AF37',
+        goldLight: '#F5E6B3',
+        goldDark: '#A8861E',
+        surfaceLight: '#FFFFFF',
+        surfaceVariant: '#F0F4F1',
+        bidHighlight: '#E8F5E9',
+        textPrimary: '#1A1A1A',
+        textSecondary: '#5F6368',
+        danger: '#DC2626',
+        info: '#2563EB',
+        warning: '#D97706',
+      },
+      fontFamily: {
+        sans: ['system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+
+<style>
+  body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background-color: #E8EDF2; color: #1A1A1A; }
+  .screen { animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+  .toast-in { animation: slideDown 0.3s ease-out; }
+  @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .pulse-dot { animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
+  .driver-move { transition: all 2s linear; }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+  .category-food { color: #FF6B35; background: rgba(255,107,53,0.12); }
+  .category-gifts { color: #E91E63; background: rgba(233,30,99,0.12); }
+  .category-pets { color: #9C27B0; background: rgba(156,39,176,0.12); }
+  .category-dates { color: #795548; background: rgba(121,85,72,0.12); }
+  .category-perfume { color: #673AB7; background: rgba(103,58,183,0.12); }
+  .category-parcels { color: #607D8B; background: rgba(96,125,139,0.12); }
+  .css-map { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 50%, #A5D6A7 100%); position: relative; overflow: hidden; }
+  .css-map::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px); background-size: 30px 30px; }
+  .route-path { stroke-dasharray: 8 4; animation: dash 1s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: -12; } }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #006C35; outline-offset: -1px; }
+  .notification-badge { animation: bounce 0.5s ease-out; }
+  @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+  [dir="ltr"] .rtl-flip { transform: scaleX(-1); }
+</style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- ====================== النظام العام ====================== -->
+
+<!-- مركز الإشعارات (Toasts) -->
+<div id="toastContainer" class="fixed top-4 right-1/2 translate-x-1/2 z-[100] space-y-2 pointer-events-none w-full max-w-sm px-4"></div>
+
+<!-- ====================== حاوية التطبيق (موبايل) ====================== -->
+<div id="appContainer" class="w-full max-w-md mx-auto min-h-screen bg-white shadow-2xl relative flex flex-col">
+
+  <!-- ========== شاشة البداية (Splash) ========== -->
+  <div id="screenSplash" class="screen flex-1 flex flex-col justify-between p-6 bg-gradient-to-b from-primaryGreen via-[#00572b] to-[#003D1F] text-white">
+    <div class="text-center pt-12">
+      <div class="w-20 h-20 bg-white/10 rounded-3xl mx-auto flex items-center justify-center mb-6 border border-white/20 backdrop-blur">
+        <i class="fa-solid fa-truck-fast text-gold text-4xl"></i>
+      </div>
+      <h1 class="text-3xl font-extrabold mb-1">واصل الإمارات</h1>
+      <p class="text-sm font-semibold text-gold mb-3">توصيل ذكي • مزايدة عادلة • 24/7</p>
+      <p class="text-xs text-white/85 px-6">اربط طلبك بأفضل السائقين عبر نظام المزايدة العكسية بين جميع الإمارات</p>
+    </div>
+    <div class="space-y-3 my-auto py-8">
+      <div class="text-center text-xs text-white/70 mb-4">
+        <i class="fa-solid fa-shield-halved text-gold mb-1"></i>
+        <div>معتمد أساطيل • MOCCAE • سالك/درب</div>
+      </div>
+      <button onclick="Nav.go('LOGIN')" class="w-full bg-gold hover:bg-goldDark text-primaryGreenDark font-extrabold py-4 rounded-2xl shadow-lg text-base transition">
+        <i class="fa-solid fa-arrow-left ml-2"></i>
+        ابدأ الآن
+      </button>
+      <button onclick="Nav.go('COMPLIANCE')" class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 rounded-2xl text-sm border border-white/20 transition">
+        دليل الاشتراطات والأنظمة
+      </button>
+    </div>
+    <div class="text-center pb-4">
+      <div class="text-[11px] text-white/60">نسخة تجريبية فعلية • Real Demo Accounts</div>
+    </div>
+  </div>
+
+  <!-- ========== شاشة تسجيل الدخول (Login) ========== -->
+  <div id="screenLogin" class="screen flex-1 flex-col hidden bg-white">
+    <div class="bg-primaryGreen text-white p-5 shadow-md">
+      <button onclick="Nav.go('SPLASH')" class="text-white text-lg mb-3"><i class="fa-solid fa-arrow-right"></i></button>
+      <h2 class="font-bold text-xl">تسجيل الدخول</h2>
+      <p class="text-xs text-white/80 mt-1">اختر طريقة الدخول لإنشاء حساب أو للمتابعة</p>
+    </div>
+
+    <div class="p-5 flex-1 overflow-y-auto space-y-5">
+      <!-- زر الدخول السريع للتجربة (مرئي أولاً) -->
+      <button onclick="Auth.quickDemoLogin()" class="w-full bg-gold hover:bg-goldDark text-primaryGreenDark font-extrabold py-4 rounded-2xl shadow-lg text-sm flex items-center justify-center gap-2 transition">
+        <i class="fa-solid fa-bolt"></i>
+        دخول سريع للتجربة الفورية
+      </button>
+      <p class="text-[11px] text-textSecondary text-center -mt-2">بدون تسجيل — ادخل واختبر التطبيق مباشرة</p>
+
+      <div class="flex items-center gap-3">
+        <div class="flex-1 h-px bg-gray-200"></div>
+        <span class="text-xs text-gray-400 font-semibold">أو سجّل حسابك</span>
+        <div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+
+      <!-- تبويب: رقم الهاتف -->
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-2">الدخول برقم الهاتف الإماراتي</label>
+        <div class="flex gap-2 items-center">
+          <div class="bg-gray-100 border border-gray-300 rounded-xl p-3 text-sm font-bold text-gray-700 flex items-center gap-1 flex-shrink-0">
+            <span>🇦🇪</span> +971
+          </div>
+          <input id="inpPhone" type="tel" inputmode="numeric" maxlength="13" placeholder="501234567" class="flex-1 border border-gray-300 rounded-xl p-3 text-sm font-medium tracking-wider">
+        </div>
+        <p class="text-[11px] text-textSecondary mt-1.5">أدخل 9 أرقام تبدأ بـ 5. مثال: <span class="font-bold text-primaryGreen" onclick="document.getElementById('inpPhone').value='501234567'" style="cursor:pointer">501234567</span> (اضغط للتعبئة التلقائية)</p>
+        <button onclick="Auth.sendOTP()" class="w-full bg-primaryGreen hover:bg-primaryGreenDark text-white font-bold py-3.5 rounded-xl shadow-md text-sm mt-3 active:scale-95 transition">
+          <i class="fa-solid fa-paper-plane ml-2"></i> إرسال رمز التحقق
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="flex-1 h-px bg-gray-200"></div>
+        <span class="text-xs text-gray-400 font-semibold">أو</span>
+        <div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+
+      <!-- تبويب: Google -->
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-2">الدخول عبر Google</label>
+        <button onclick="Auth.googleSignIn()" class="w-full bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-bold py-3 rounded-xl shadow-sm text-sm flex items-center justify-center gap-3 transition active:scale-95">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.45.34-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+          الدخول عبر Google
+        </button>
+        <p class="text-[11px] text-textSecondary mt-1.5 text-center">يعمل في وضع التجربة — يُفعّل OAuth الحقيقي بإضافة معرف العميل</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="flex-1 h-px bg-gray-200"></div>
+        <span class="text-xs text-gray-400 font-semibold">وصول خاص</span>
+        <div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+
+      <!-- تبويب: Admin -->
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-2">دخول الإدارة</label>
+        <input id="inpAdminCode" type="text" placeholder="رمز الإدارة (ADMIN2024)" class="w-full border border-gray-300 rounded-xl p-3 text-sm font-medium">
+        <button onclick="Auth.adminLogin()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-xl shadow-md text-sm mt-2">
+          <i class="fa-solid fa-user-shield ml-2"></i> دخول لوحة الإدارة
+        </button>
+      </div>
+
+      <div class="bg-goldLight/50 border border-gold/30 p-3 rounded-xl text-[11px] text-gray-700">
+        <i class="fa-solid fa-circle-info text-goldDark"></i>
+        <strong>للتجربة السريعة:</strong> استخدم أي رقم هاتف صحيح بصيغة +971 5X XXX XXXX، وسيظهر رمز التحقق في إشعار تجريبي.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== شاشة التحقق بـ OTP ========== -->
+  <div id="screenOTP" class="screen flex-1 flex-col hidden bg-white">
+    <div class="bg-primaryGreen text-white p-5 shadow-md">
+      <button onclick="Nav.go('LOGIN')" class="text-white text-lg mb-3"><i class="fa-solid fa-arrow-right"></i></button>
+      <h2 class="font-bold text-xl">رمز التحقق</h2>
+      <p class="text-xs text-white/80 mt-1">أدخل الرمز المرسل إلى <span id="otpPhoneDisplay" class="font-bold"></span></p>
+    </div>
+    <div class="p-5 flex-1 flex flex-col justify-center space-y-6">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-primaryGreenLight rounded-2xl mx-auto flex items-center justify-center mb-4">
+          <i class="fa-solid fa-message text-primaryGreen text-2xl"></i>
+        </div>
+        <p class="text-sm text-gray-600 mb-2">رمز التحقق 4 أرقام</p>
+        <input id="inpOTP" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" class="w-32 mx-auto text-center text-3xl font-extrabold tracking-[0.5em] border-2 border-gray-300 rounded-2xl p-3 focus:border-primaryGreen">
+      </div>
+      <button onclick="Auth.verifyOTP()" class="w-full bg-primaryGreen hover:bg-primaryGreenDark text-white font-bold py-3.5 rounded-xl shadow-md text-sm">
+        تأكيد الرمز
+      </button>
+      <button onclick="Auth.resendOTP()" class="text-center text-xs text-primaryGreen font-semibold">
+        إعادة إرسال الرمز
+      </button>
+      <div id="otpHintBox" class="bg-goldLight/50 border border-gold/30 p-3 rounded-xl text-center text-[11px] text-gray-700 hidden">
+        <i class="fa-solid fa-flask text-goldDark"></i>
+        وضع التجربة: رمز التحقق هو <strong id="otpHintCode" class="text-primaryGreen text-base"></strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== شاشة اختيار الدور (RoleSelection) ========== -->
+  <div id="screenRoleSelection" class="screen flex-1 flex-col hidden bg-gradient-to-b from-primaryGreen via-[#00572b] to-[#003D1F] text-white">
+    <div class="p-5 pt-8">
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 bg-white/10 rounded-2xl mx-auto flex items-center justify-center mb-3 border border-white/20">
+          <i class="fa-solid fa-user-check text-gold text-2xl"></i>
+        </div>
+        <h2 class="font-bold text-lg">مرحباً <span id="roleSelName" class="text-gold"></span></h2>
+        <p class="text-xs text-white/70 mt-1">اختر دورك للمتابعة</p>
+      </div>
+    </div>
+    <div class="px-5 space-y-3 my-auto pb-8">
+      <button onclick="Auth.selectRole('CUSTOMER')" class="w-full bg-white text-right p-4 rounded-2xl shadow-lg flex items-center gap-4 hover:scale-[1.02] transition">
+        <div class="w-12 h-12 rounded-xl bg-primaryGreen/10 flex items-center justify-center text-primaryGreen text-xl flex-shrink-0">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-base text-gray-900">عميل / تاجر</div>
+          <div class="text-xs text-gray-500">أنشئ طلب توصيل واستقبل عروض السائقين</div>
+        </div>
+        <i class="fa-solid fa-chevron-left text-gray-400"></i>
+      </button>
+      <button onclick="Auth.selectRole('DRIVER')" class="w-full bg-white text-right p-4 rounded-2xl shadow-lg flex items-center gap-4 hover:scale-[1.02] transition">
+        <div class="w-12 h-12 rounded-xl bg-primaryGreen/10 flex items-center justify-center text-primaryGreen text-xl flex-shrink-0">
+          <i class="fa-solid fa-motorcycle"></i>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-base text-gray-900">سائق / مندوب</div>
+          <div class="text-xs text-gray-500">قدّم عروضك على الطلبات المتاحة واربح</div>
+        </div>
+        <i class="fa-solid fa-chevron-left text-gray-400"></i>
+      </button>
+    </div>
+    <div class="p-5 text-center">
+      <button onclick="Auth.logout()" class="text-white/70 text-xs hover:text-white">
+        <i class="fa-solid fa-right-from-bracket ml-1"></i> تسجيل الخروج
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== شاشة العميل الرئيسية (CustomerHome) ========== -->
+  <div id="screenCustomerHome" class="screen flex-1 flex-col hidden bg-[#F8F9FA]">
+    <div class="bg-primaryGreen text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-30">
+      <div>
+        <h2 class="font-bold text-lg">واصل الإمارات</h2>
+        <span id="custWelcomeText" class="text-xs text-white/80">مرحباً</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="Notify.togglePanel()" class="relative w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+          <i class="fa-solid fa-bell"></i>
+          <span id="bellBadge" class="absolute -top-1 -right-1 bg-gold text-primaryGreenDark text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+        </button>
+        <button onclick="Auth.logout()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="p-4 flex-1 overflow-y-auto pb-28 scrollbar-thin">
+      <!-- إحصائيات -->
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-white p-3 rounded-xl text-center border border-gray-200 shadow-sm">
+          <div id="custActiveOrdersCount" class="text-xl font-bold text-primaryGreen">0</div>
+          <div class="text-[10px] text-textSecondary">نشطة</div>
+        </div>
+        <div class="bg-white p-3 rounded-xl text-center border border-gray-200 shadow-sm">
+          <div id="custPendingBidsCount" class="text-xl font-bold text-goldDark">0</div>
+          <div class="text-[10px] text-textSecondary">بانتظار</div>
+        </div>
+        <div class="bg-white p-3 rounded-xl text-center border border-gray-200 shadow-sm">
+          <div id="custDeliveredCount" class="text-xl font-bold text-emerald-600">0</div>
+          <div class="text-[10px] text-textSecondary">مكتملة</div>
+        </div>
+      </div>
+
+      <!-- فلتر التصنيفات -->
+      <div class="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-thin">
+        <button onclick="Orders.setFilter(null)" id="filterChip_all" class="px-3 py-1.5 rounded-full text-xs font-bold bg-primaryGreen text-white whitespace-nowrap">الكل</button>
+      </div>
+
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-base text-gray-900">طلباتي</h3>
+        <span class="text-xs text-textSecondary" id="myOrdersCounter"></span>
+      </div>
+      <div id="customerOrdersList" class="space-y-3"></div>
+    </div>
+
+    <button onclick="Nav.go('CREATE_ORDER')" class="fixed bottom-6 max-w-[380px] w-[90%] left-1/2 -translate-x-1/2 bg-primaryGreen hover:bg-primaryGreenDark text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl flex items-center justify-center gap-2 transition z-40">
+      <i class="fa-solid fa-plus"></i>
+      <span>إنشاء طلب جديد</span>
+    </button>
+  </div>
+
+  <!-- ========== شاشة إنشاء طلب (CreateOrder) ========== -->
+  <div id="screenCreateOrder" class="screen flex-1 flex-col hidden bg-white">
+    <div class="bg-primaryGreen text-white p-4 flex items-center gap-3 shadow-md sticky top-0 z-30">
+      <button onclick="Nav.go('CUSTOMER_HOME')" class="text-white text-lg p-1"><i class="fa-solid fa-arrow-right"></i></button>
+      <h2 class="font-bold text-lg">إنشاء طلب جديد</h2>
+    </div>
+    <form onsubmit="Orders.handleCreate(event)" class="p-4 overflow-y-auto space-y-4 pb-10 scrollbar-thin flex-1">
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-2">فئة الطلب</label>
+        <div class="grid grid-cols-3 gap-2" id="createOrderCatChips"></div>
+      </div>
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">عنوان الطلب</label>
+        <input id="inpTitle" type="text" required placeholder="مثال: توصيل هدية عيد ميلاد" class="w-full border border-gray-300 rounded-xl p-3 text-sm">
+      </div>
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">تفاصيل إضافية</label>
+        <textarea id="inpDescription" rows="2" placeholder="تعليمات للسائق (حرص، تبريد، إلخ)" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-sm text-gray-800 mb-1.5">إمارة الاستلام</label>
+          <select id="inpPickupEmirate" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs bg-white"></select>
+        </div>
+        <div>
+          <label class="block font-bold text-sm text-gray-800 mb-1.5">إمارة التسليم</label>
+          <select id="inpDropoffEmirate" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs bg-white"></select>
+        </div>
+      </div>
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">عنوان الاستلام</label>
+        <input id="inpPickupAddr" type="text" required placeholder="مثال: دبي مول - المدخل الرئيسي" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs">
+      </div>
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">عنوان التسليم</label>
+        <input id="inpDropoffAddr" type="text" required placeholder="مثال: الشارقة - المجاز 3" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs">
+      </div>
+
+      <!-- المعاينة المالية الديناميكية -->
+      <div class="bg-primaryGreen text-white p-4 rounded-2xl shadow-md">
+        <div class="flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-calculator text-gold"></i>
+          <h4 class="font-bold text-sm">المعاينة المالية الديناميكية</h4>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div><div id="prevDistance" class="text-base font-bold">—</div><div class="text-[10px] text-white/70">المسافة</div></div>
+          <div><div id="prevTolls" class="text-base font-bold">—</div><div class="text-[10px] text-white/70">رسوم</div></div>
+          <div><div id="prevFloor" class="text-base font-bold text-gold">—</div><div class="text-[10px] text-white/70">الحد الأدنى</div></div>
+        </div>
+        <div class="mt-3 bg-white/10 rounded-lg p-2 text-[11px]">
+          السعر المقترح للتاجر: <span id="prevSuggested" class="font-bold text-gold">—</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">السعر المقترح (درهم)</label>
+        <input id="inpPrice" type="number" required placeholder="مثال: 45" class="w-full border border-gray-300 rounded-xl p-3 text-sm font-bold text-primaryGreen">
+        <p class="text-[11px] text-textSecondary mt-1">لا يمكن أن يقل عن السعر الأدنى الديناميكي</p>
+      </div>
+
+      <!-- شارات المتطلبات -->
+      <div id="createReqBadges" class="flex flex-wrap gap-2"></div>
+
+      <button type="submit" class="w-full bg-gold hover:bg-goldDark text-primaryGreenDark font-extrabold py-3.5 rounded-xl shadow-lg text-sm mt-4">
+        <i class="fa-solid fa-paper-plane ml-2"></i> نشر الطلب وبدء المزايدة
+      </button>
+    </form>
+  </div>
+
+  <!-- ========== شاشة تفاصيل الطلب (OrderDetails) ========== -->
+  <div id="screenOrderDetails" class="screen flex-1 flex-col hidden bg-[#F8F9FA]">
+    <div class="bg-primaryGreen text-white p-4 flex items-center gap-3 shadow-md sticky top-0 z-30">
+      <button onclick="Nav.back()" class="text-white text-lg p-1"><i class="fa-solid fa-arrow-right"></i></button>
+      <div class="flex-1">
+        <h2 class="font-bold text-base">تفاصيل الطلب</h2>
+        <span id="dtlTrackingCode" class="text-[11px] text-white/70"></span>
+      </div>
+      <button onclick="Nav.go('LIVE_TRACKING')" id="btnLiveTrack" class="hidden w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+        <i class="fa-solid fa-map-location-dot"></i>
+      </button>
+    </div>
+
+    <div class="p-4 overflow-y-auto space-y-4 flex-1 pb-28 scrollbar-thin">
+      <!-- كرت ملخص الطلب -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+        <div class="flex justify-between items-center mb-2">
+          <span id="dtlCategoryBadge" class="px-2.5 py-1 rounded-full text-xs font-bold"></span>
+          <span id="dtlStatusBadge"></span>
+        </div>
+        <h3 id="dtlTitle" class="font-bold text-base text-gray-900 mb-1"></h3>
+        <p id="dtlDesc" class="text-xs text-textSecondary mb-3"></p>
+        <div class="border-t border-gray-100 pt-3 space-y-1.5 text-xs">
+          <div class="flex justify-between"><span class="text-textSecondary">من:</span><span id="dtlFrom" class="font-medium text-gray-900 text-left"></span></div>
+          <div class="flex justify-between"><span class="text-textSecondary">إلى:</span><span id="dtlTo" class="font-medium text-gray-900 text-left"></span></div>
+          <div class="flex justify-between"><span class="text-textSecondary">المسافة:</span><span id="dtlDistance" class="font-medium text-gray-900"></span></div>
+          <div class="flex justify-between"><span class="text-textSecondary">رسوم سالك/درب:</span><span id="dtlTolls" class="font-medium text-gray-900"></span></div>
+          <div class="flex justify-between"><span class="text-textSecondary">السعر الأدنى:</span><span id="dtlFloor" class="font-bold text-goldDark"></span></div>
+          <div class="flex justify-between"><span class="text-textSecondary">السعر المقترح:</span><span id="dtlSuggested" class="font-bold text-primaryGreen"></span></div>
+        </div>
+      </div>
+
+      <!-- السائق المختار -->
+      <div id="selectedDriverCard" class="bg-bidHighlight border border-emerald-300 p-4 rounded-2xl hidden">
+        <div class="text-xs font-bold text-primaryGreen mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check"></i> الكابتن المختار للرحلة
+        </div>
+        <div class="flex justify-between items-center">
+          <div>
+            <div id="selDriverName" class="font-bold text-sm text-gray-900"></div>
+            <div id="selDriverRating" class="text-xs text-textSecondary"></div>
+            <div id="selDriverVehicle" class="text-[11px] text-textSecondary mt-0.5"></div>
+          </div>
+          <div class="text-left">
+            <div id="selDriverPrice" class="font-extrabold text-base text-primaryGreen"></div>
+            <div id="selDriverEta" class="text-[11px] text-textSecondary"></div>
+            <button onclick="Chat.open()" class="mt-1 text-[11px] text-info font-bold"><i class="fa-solid fa-comment-dots"></i> محادثة</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- مراحل الرحلة -->
+      <div id="statusStepper" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hidden">
+        <h4 class="font-bold text-xs text-gray-700 mb-3">مراحل تنفيذ الرحلة</h4>
+        <div class="flex justify-between items-start" id="stepperContent"></div>
+      </div>
+
+      <!-- أزرار التحكم -->
+      <div id="actionButtons" class="space-y-2"></div>
+
+      <!-- العروض التنافسية -->
+      <div id="bidsSection">
+        <div class="flex justify-between items-center mb-2">
+          <h4 class="font-bold text-sm text-gray-900">عروض السائقين (<span id="dtlBidsCount">0</span>)</h4>
+          <span class="text-xs text-primaryGreen font-semibold">مرتبة حسب الأفضل</span>
+        </div>
+        <div id="orderDetailsBidsList" class="space-y-2.5"></div>
+      </div>
+
+      <!-- زر تقديم عرض للسائق -->
+      <div id="driverPlaceBidCard" class="hidden bg-blue-50 border border-blue-300 p-4 rounded-2xl text-center">
+        <div class="font-bold text-sm text-gray-900 mb-1">هذه الطلبية متاحة للمزايدة</div>
+        <div class="text-xs text-textSecondary mb-3">السعر المستهدف: <span id="bidTargetPrice" class="font-bold text-primaryGreen"></span></div>
+        <button onclick="Nav.go('PLACE_BID')" class="w-full bg-gold hover:bg-goldDark text-primaryGreenDark font-bold py-2.5 rounded-xl text-sm">
+          <i class="fa-solid fa-gavel ml-1"></i> تقديم عرض سعر
+        </button>
+      </div>
+    </div>
+
+    <!-- شريط إدخال المحادثة -->
+    <div id="chatInputBar" class="hidden bg-white border-t border-gray-200 p-3 flex items-center gap-2">
+      <input id="chatInput" type="text" placeholder="اكتب رسالة..." class="flex-1 border border-gray-300 rounded-full p-2.5 text-sm">
+      <button onclick="Chat.sendCurrent()" class="w-10 h-10 bg-primaryGreen rounded-full text-white flex items-center justify-center">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== شاشة التتبع المباشر (LiveTracking) ========== -->
+  <div id="screenLiveTracking" class="screen flex-1 flex-col hidden bg-white">
+    <div class="bg-primaryGreen text-white p-4 flex items-center gap-3 shadow-md">
+      <button onclick="Nav.back()" class="text-white text-lg p-1"><i class="fa-solid fa-arrow-right"></i></button>
+      <div class="flex-1">
+        <h2 class="font-bold text-base">تتبع مباشر</h2>
+        <span id="trackOrderCode" class="text-[11px] text-white/70"></span>
+      </div>
+      <div class="flex items-center gap-1 text-xs">
+        <span class="w-2 h-2 bg-emerald-400 rounded-full pulse-dot"></span>
+        <span>مباشر</span>
+      </div>
+    </div>
+
+    <!-- الخريطة -->
+    <div id="mapContainer" class="relative" style="height: 60vh;">
+      <div id="mapboxMap" class="absolute inset-0"></div>
+      <div id="cssMap" class="css-map absolute inset-0 flex flex-col items-center justify-center p-4">
+        <div class="bg-white/90 backdrop-blur rounded-2xl p-6 text-center max-w-xs shadow-xl">
+          <i class="fa-solid fa-map-location-dot text-primaryGreen text-3xl mb-3"></i>
+          <h4 class="font-bold text-sm text-gray-900 mb-2">التتبع المرئي للرحلة</h4>
+          <div class="text-xs text-gray-600 mb-4">يتم عرض مسار الرحلة وحركة الكابتن بصرياً. لتفعيل الخرائط الحقيقية، أضف مفتاح Mapbox.</div>
+          <svg viewBox="0 0 300 200" class="w-full h-32">
+            <path id="trackPath" d="M 40 160 Q 150 50 260 40" stroke="#006C35" stroke-width="3" fill="none" class="route-path"/>
+            <circle cx="40" cy="160" r="8" fill="#D4AF37"/>
+            <text x="40" y="180" text-anchor="middle" font-size="9" fill="#333">الاستلام</text>
+            <circle cx="260" cy="40" r="8" fill="#10B981"/>
+            <text x="260" y="30" text-anchor="middle" font-size="9" fill="#333">التسليم</text>
+            <g id="driverMarker" transform="translate(40,160)">
+              <circle r="10" fill="#006C35" stroke="white" stroke-width="2"/>
+              <text text-anchor="middle" dy="4" font-size="11" fill="white">🚗</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- معلومات الرحلة -->
+    <div class="p-4 flex-1 overflow-y-auto scrollbar-thin">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+        <div class="flex justify-between items-center mb-3">
+          <div>
+            <div id="trackDriverName" class="font-bold text-sm text-gray-900"></div>
+            <div id="trackDriverInfo" class="text-xs text-textSecondary"></div>
+          </div>
+          <div class="text-left">
+            <div id="trackETA" class="font-extrabold text-base text-primaryGreen">—</div>
+            <div class="text-[10px] text-textSecondary">دقيقة للوصول</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-gray-50 rounded-lg p-2">
+            <div class="text-textSecondary text-[10px]">الحالة الحالية</div>
+            <div id="trackStatus" class="font-bold text-gray-900 text-xs"></div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-2">
+            <div class="text-textSecondary text-[10px]">السعر المقفل</div>
+            <div id="trackPrice" class="font-bold text-primaryGreen text-xs"></div>
+          </div>
+        </div>
+        <button onclick="Chat.open()" class="w-full mt-3 bg-primaryGreenLight text-primaryGreen font-bold py-2 rounded-xl text-xs">
+          <i class="fa-solid fa-comment-dots ml-1"></i> مراسلة الكابتن
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== شاشة السائق الرئيسية (DriverHome) ========== -->
+  <div id="screenDriverHome" class="screen flex-1 flex-col hidden bg-[#F8F9FA]">
+    <div class="bg-primaryGreen text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-30">
+      <div>
+        <h2 class="font-bold text-lg">لوحة الكابتن</h2>
+        <span id="driverWelcomeText" class="text-xs text-white/80"></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="Notify.togglePanel()" class="relative w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+          <i class="fa-solid fa-bell"></i>
+          <span id="driverBellBadge" class="absolute -top-1 -right-1 bg-gold text-primaryGreenDark text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+        </button>
+        <button onclick="Auth.logout()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="p-4 flex-1 overflow-y-auto pb-8 scrollbar-thin">
+      <!-- إحصائيات السائق -->
+      <div class="bg-primaryGreen text-white rounded-2xl p-4 shadow-md mb-4">
+        <div class="flex justify-around text-center">
+          <div>
+            <div class="text-gold font-extrabold text-lg flex items-center justify-center gap-1">
+              <i class="fa-solid fa-star text-sm"></i><span id="driverStatRating">4.9</span>
+            </div>
+            <div class="text-[10px] text-white/80">التقييم</div>
+          </div>
+          <div class="border-r border-white/20"></div>
+          <div>
+            <div id="driverStatTrips" class="font-extrabold text-lg">0</div>
+            <div class="text-[10px] text-white/80">رحلة</div>
+          </div>
+          <div class="border-r border-white/20"></div>
+          <div>
+            <div id="driverStatAvailable" class="font-extrabold text-lg">0</div>
+            <div class="text-[10px] text-white/80">متاحة</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-base text-gray-900">الطلبات المتاحة</h3>
+        <span class="text-xs text-textSecondary" id="availableCounter"></span>
+      </div>
+      <div id="driverOrdersList" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- ========== شاشة تقديم عرض (PlaceBid) ========== -->
+  <div id="screenPlaceBid" class="screen flex-1 flex-col hidden bg-white">
+    <div class="bg-primaryGreen text-white p-4 flex items-center gap-3 shadow-md sticky top-0 z-30">
+      <button onclick="Nav.go('DRIVER_HOME')" class="text-white text-lg p-1"><i class="fa-solid fa-arrow-right"></i></button>
+      <h2 class="font-bold text-lg">تقديم عرض سعر</h2>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-4 pb-10 scrollbar-thin flex-1">
+      <div class="bg-surfaceVariant p-4 rounded-2xl border border-slate-200">
+        <h3 id="bidSummaryTitle" class="font-bold text-sm text-gray-900 mb-1"></h3>
+        <p id="bidSummaryRoute" class="text-xs text-textSecondary mb-2"></p>
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+          <span class="text-xs text-textSecondary">سعر العميل المقترح:</span>
+          <span id="bidSummaryPrice" class="font-bold text-sm text-primaryGreen"></span>
+        </div>
+        <div id="bidSummaryFloor" class="text-goldDark font-semibold text-[11px] mt-1 text-left"></div>
+        <div id="bidSummaryLowest" class="text-primaryGreen font-semibold text-[11px] mt-1 text-left"></div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">عرضك التنافسي (درهم)</label>
+        <input id="inpBidOfferedPrice" type="number" required placeholder="مثال: 38" class="w-full border border-gray-300 rounded-xl p-3 text-sm font-bold text-primaryGreen">
+        <p class="text-[11px] text-textSecondary mt-1">لا يمكن أن يقل عن السعر الأدنى الديناميكي</p>
+      </div>
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">الوقت التقديري للوصول (دقيقة)</label>
+        <input id="inpBidEta" type="number" required placeholder="مثال: 25" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm">
+      </div>
+      <div>
+        <label class="block font-bold text-sm text-gray-800 mb-1.5">رسالة للعميل (اختياري)</label>
+        <textarea id="inpBidMsg" rows="2" placeholder="مثال: أنا قريب جداً وأقدر أستلم فوراً" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs"></textarea>
+      </div>
+
+      <div class="bg-bidHighlight p-3.5 rounded-xl border border-emerald-200 flex justify-between items-center">
+        <div>
+          <div class="text-[11px] text-textSecondary">ملفك الذي سيظهر للعميل:</div>
+          <div id="driverProfileCardName" class="font-bold text-gray-900 text-sm"></div>
+        </div>
+        <div class="text-left">
+          <span class="text-gold font-bold">★ <span id="driverProfileRating">4.9</span></span>
+          <span class="text-[11px] text-textSecondary block"><span id="driverProfileTrips">0</span> رحلة</span>
+        </div>
+      </div>
+
+      <button onclick="Bidding.send()" class="w-full bg-gold hover:bg-goldDark text-primaryGreenDark font-extrabold py-3.5 rounded-xl shadow-lg text-sm mt-2">
+        <i class="fa-solid fa-paper-plane ml-2"></i> إرسال العرض الآن
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== شاشة دليل الاشتراطات (Compliance) ========== -->
+  <div id="screenCompliance" class="screen flex-1 flex-col hidden bg-[#F8F9FA]">
+    <div class="bg-primaryGreen text-white p-4 flex items-center gap-3 shadow-md sticky top-0 z-30">
+      <button onclick="Nav.back()" class="text-white text-lg p-1"><i class="fa-solid fa-arrow-right"></i></button>
+      <h2 class="font-bold text-base">دليل الاشتراطات</h2>
+    </div>
+    <div class="p-4 flex-1 overflow-y-auto space-y-3 pb-8 scrollbar-thin" id="complianceList"></div>
+  </div>
+
+  <!-- ========== النوافذ المنبثقة ========== -->
+
+  <!-- نافذة التحقق PIN -->
+  <div id="modalPin" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+      <div class="text-center mb-4">
+        <div class="w-14 h-14 bg-emerald-100 rounded-2xl mx-auto flex items-center justify-center mb-3">
+          <i class="fa-solid fa-lock text-emerald-600 text-xl"></i>
+        </div>
+        <h3 class="font-bold text-base text-gray-900">تحقق رمز التسليم</h3>
+        <p class="text-xs text-textSecondary mt-1">أدخل رمز الـ4 أرقام الذي استلمه المستلم</p>
+      </div>
+      <input id="inpPin" type="tel" inputmode="numeric" maxlength="4" placeholder="• • • •" class="w-32 mx-auto block text-center text-2xl font-extrabold tracking-[0.4em] border-2 border-gray-300 rounded-xl p-2.5 focus:border-primaryGreen mb-3">
+      <div id="pinError" class="text-xs text-danger text-center mb-3 hidden"></div>
+      <button onclick="Orders.verifyPin()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm mb-2">
+        <i class="fa-solid fa-check ml-1"></i> تأكيد الرمز وإكمال التسليم
+      </button>
+      <button onclick="Nav.closeModal()" class="w-full text-gray-500 font-semibold py-2 text-xs">إلغاء</button>
+    </div>
+  </div>
+
+  <!-- نافذة لوحة الإشعارات -->
+  <div id="modalNotifications" class="fixed inset-0 bg-black/50 z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full shadow-2xl max-h-[80vh] flex flex-col">
+      <div class="bg-primaryGreen text-white p-4 flex justify-between items-center rounded-t-2xl">
+        <h3 class="font-bold text-base">الإشعارات</h3>
+        <button onclick="Nav.closeModal()" class="text-white"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div id="notificationsList" class="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-2"></div>
+      <button onclick="Notify.markAllRead()" class="p-3 text-primaryGreen font-bold text-xs border-t">تعليم الكل كمقروء</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================== لوحة الإدارة (Admin Dashboard) ====================== -->
+<div id="adminContainer" class="hidden min-h-screen bg-gray-100">
+  <!-- شريط جانبي -->
+  <div class="flex">
+    <aside class="w-64 bg-primaryGreenDark text-white min-h-screen p-4 sticky top-0 h-screen overflow-y-auto">
+      <div class="mb-6 pb-4 border-b border-white/20">
+        <h1 class="font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-truck-fast text-gold"></i> واصل الإمارات
+        </h1>
+        <p class="text-[11px] text-white/60 mt-1">لوحة الإدارة</p>
+      </div>
+      <nav class="space-y-1">
+        <button onclick="Admin.show('dashboard')" id="adminNav_dashboard" class="w-full text-right p-2.5 rounded-lg bg-white/10 text-white text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-gauge w-4"></i> لوحة المعلومات</button>
+        <button onclick="Admin.show('orders')" id="adminNav_orders" class="w-full text-right p-2.5 rounded-lg hover:bg-white/10 text-white/80 text-sm flex items-center gap-2"><i class="fa-solid fa-box w-4"></i> الطلبيات</button>
+        <button onclick="Admin.show('users')" id="adminNav_users" class="w-full text-right p-2.5 rounded-lg hover:bg-white/10 text-white/80 text-sm flex items-center gap-2"><i class="fa-solid fa-users w-4"></i> المستخدمون</button>
+        <button onclick="Admin.show('drivers')" id="adminNav_drivers" class="w-full text-right p-2.5 rounded-lg hover:bg-white/10 text-white/80 text-sm flex items-center gap-2"><i class="fa-solid fa-motorcycle w-4"></i> السائقون</button>
+        <button onclick="Admin.show('revenue')" id="adminNav_revenue" class="w-full text-right p-2.5 rounded-lg hover:bg-white/10 text-white/80 text-sm flex items-center gap-2"><i class="fa-solid fa-chart-line w-4"></i> الإيرادات</button>
+      </nav>
+      <div class="mt-6 pt-4 border-t border-white/20">
+        <button onclick="Auth.logout()" class="w-full text-right p-2 rounded-lg hover:bg-white/10 text-white/70 text-xs flex items-center gap-2"><i class="fa-solid fa-right-from-bracket w-4"></i> خروج</button>
+      </div>
+    </aside>
+
+    <!-- المحتوى -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div id="adminContent"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   واصل الإمارات — Wasel UAE
+   تطبيق ويب متكامل — ملف واحد قائم بذاته
+   ============================================================ */
+
+// ============== الإعدادات ==============
+const CONFIG = {
+  // لإتفعيل خرائط Mapbox الحقيقية: استبدل بـ pk.xxxxx توكنك من mapbox.com
+  MAPBOX_TOKEN: '', // ← ضع توكنك هنا
+  // لإتفعيل Google Sign-In الحقيقي: استبدل بمعرف عميلك من console.developers.google.com
+  GOOGLE_CLIENT_ID: '', // ← ضع معرف العميل هنا
+  APP_NAME: 'واصل الإمارات',
+};
+
+// ============== الثوابت ==============
+const EMIRATES = {
+  ABU_DHABI:      { ar: 'أبوظبي',       baseKm: 140 },
+  DUBAI:          { ar: 'دبي',          baseKm: 0 },
+  SHARJAH:        { ar: 'الشارقة',      baseKm: 25 },
+  AJMAN:          { ar: 'عجمان',        baseKm: 40 },
+  UMM_AL_QUWAIN:  { ar: 'أم القيوين',   baseKm: 65 },
+  RAS_AL_KHAIMAH: { ar: 'رأس الخيمة',   baseKm: 110 },
+  FUJAIRAH:       { ar: 'الفجيرة',      baseKm: 125 },
+  AL_AIN:         { ar: 'العين',        baseKm: 150 },
+};
+
+const CATEGORIES = {
+  GIFTS_PERFUMES:   { ar: 'هدايا وعطور',          css: 'category-perfume', surcharge: 10, requiresAC: true,  requiresPin: true,  icon: 'fa-gift' },
+  PETS_BIRDS:       { ar: 'طيور وحيوانات',         css: 'category-pets',    surcharge: 20, requiresAC: true,  requiresPin: false, icon: 'fa-paw' },
+  DATES_CHOCOLATE:  { ar: 'شوكولاتة وتمور',         css: 'category-dates',   surcharge: 15, requiresAC: true,  requiresPin: false, icon: 'fa-cookie-bite' },
+  FOOD_MEALS:       { ar: 'أطعمة ووجبات',           css: 'category-food',    surcharge: 0,  requiresAC: false, requiresPin: false, icon: 'fa-utensils' },
+  PARCELS_BUSINESS: { ar: 'طرود تجارية',            css: 'category-parcels', surcharge: 0,  requiresAC: false, requiresPin: false, icon: 'fa-box' },
+  OPEN_ORDER:       { ar: 'مهمة خاصة',              css: 'category-parcels', surcharge: 0,  requiresAC: false, requiresPin: false, icon: 'fa-bolt' },
+};
+
+const VEHICLES = {
+  AC_SEDAN:       { ar: 'سيارة صالون مكيفة',         isAC: true,  icon: 'fa-car' },
+  COOLING_VAN:    { ar: 'فان تبريد',                isAC: true,  icon: 'fa-truck' },
+  INSULATED_BIKE: { ar: 'دراجة معزولة',              isAC: false, icon: 'fa-motorcycle' },
+  SUV_TRANSPORT:  { ar: 'دفع رباعي',                isAC: true,  icon: 'fa-truck-pickup' },
+};
+
+const ORDER_STATUS = {
+  WAITING_FOR_BIDS:       { ar: 'بانتظار العروض',    idx: 0, color: 'amber' },
+  BID_ACCEPTED:           { ar: 'تم قبول العرض',     idx: 1, color: 'blue' },
+  DRIVER_EN_ROUTE_PICKUP: { ar: 'في طريقه للاستلام',  idx: 2, color: 'blue' },
+  PICKED_UP:              { ar: 'تم الاستلام',       idx: 3, color: 'purple' },
+  IN_TRANSIT:             { ar: 'في الطريق',         idx: 4, color: 'purple' },
+  DELIVERED:              { ar: 'تم التسليم',        idx: 5, color: 'emerald' },
+};
+
+const COMPLIANCE_CARDS = [
+  { icon: 'fa-shield-halved', color: 'emerald', title: 'منصة أساطيل (Asateel) — ITC أبوظبي', body: 'تخضع جميع المركبات التجارية في أبوظبي للتسجيل في منصة أساطيل. يحمل كل سائق معتمد تصريح Driver Permit مرتبطاً بالملف التجاري للشركة.' },
+  { icon: 'fa-scale-balanced', color: 'primaryGreen', title: 'القانون الاتحادي رقم 9 لسنة 2011', body: 'ينظّم القانون النقل التجاري ونقل البضائع لضمان أمن وسلامة الشحنات. يلتزم التطيق بقبول عروض السائقين الموثّقين فقط.' },
+  { icon: 'fa-road', color: 'gold', title: 'نظاما سالك (دبي) ودرب (أبوظبي)', body: 'سالك: 6 دراهم في الذروة و4 في العادي، مجاني 1-6 صباحاً. درب: 4 دراهم للبوابة بتقنية ANPR. يحسبها التطبيق آلياً في عرض السعر.' },
+  { icon: 'fa-sun', color: 'orange', title: 'قانون حظر الظهيرة الصيفي', body: 'يُعلّق التطبيق استلام الطلبات الحساسة للحرارة على الدراجات في فترة 12:30-3:00 ظهراً، ويوجّهها للمركبات المكيفة.' },
+  { icon: 'fa-paw', color: 'teal', title: 'MOCCAE — نقل الحيوانات', body: 'يشترط جوازاً بيطرياً وشريحة ISO 15-digit وتحصيناً ضد داء الكلب. يمنع نقل الطيور على الدراجات، فقط المركبات المكيفة المجهزة.' },
+  { icon: 'fa-snowflake', color: 'blue', title: 'النقل الحراري للشوكولاتة والتمور', body: 'في صيف يتجاوز 45°C، يتطلب صندوق FRP معزول للدراجات، ويفضل الفانات المبردة بدرجة 16-18°C للشحنات الفاخرة.' },
+  { icon: 'fa-lock', color: 'purple', title: 'رمز التحقق PIN الرباعي', body: 'يصدر التطبيق رمز PIN لكل طلبية حساسة (هدايا، عطور). يُرسل للمستلم فقط ويطلبه من الكابتن عند الباب لإتمام التسليم وتحرير المستحقات.' },
+  { icon: 'fa-gavel', color: 'primaryGreen', title: 'مزايدة عكسية نزيهة', body: 'يحسب التطبيق سعراً أدنى ديناميكياً لا يُقبل عرض دونه، يمنع تسابق السائقين نحو الهبوط المدمّر للأسعار (Winner\'s Curse).' },
+  { icon: 'fa-store', color: 'gold', title: 'رخصة تاجر أبوظبي (Tajer)', body: 'تتيح دائرة التنمية الاقتصادية بأبوظبي رخصة تاجر أبوظبي التي تعفي من شرط استئجار مقر مادي لمدة 3 سنوات — مدخل低成本 لتأسيس افتراضي.' },
+  { icon: 'fa-credit-card', color: 'teal', title: 'تكامل Fintech (Pyypl/Pluto)', body: 'لعمليات الشراء بالنيابة (Concierge) يصدر التطبيق بطاقة ائتمان افتراضية ذات استعمال واحد تخصّص بقيمة الفاتورة، تحمي أموال السائق من الاستنزاف.' },
+];
+
+// ============== الحالة ==============
+const State = {
+  screen: 'SPLASH',
+  prevScreen: null,
+  user: null,           // { id, phone, name, role, createdAt }
+  role: null,           // 'CUSTOMER' | 'DRIVER' | 'ADMIN'
+  activeOrderId: null,
+  activeCategory: null,
+  pendingOTP: null,
+  pendingPhone: null,
+  currentDriver: null,  // السائق الحالي في وضع DRIVER
+  map: null,            // خريطة Mapbox
+  driverAnimInterval: null,
+};
+
+// ============== قاعدة البيانات (localStorage) ==============
+const DB = {
+  K: 'wasel_db_v1',
+  load() {
+    try { return JSON.parse(localStorage.getItem(this.K)) || this.seed(); }
+    catch { return this.seed(); }
+  },
+  save(data) { localStorage.setItem(this.K, JSON.stringify(data)); },
+  seed() {
+    const data = {
+      users: [],
+      orders: [],
+      bids: [],
+      drivers: [
+        { id: 'drv_1', name: 'سلطان الكعبي', rating: 4.95, trips: 1680, vehicle: 'AC_SEDAN', plate: 'أبوظبي 5-41902', asateel: true, phone: '+971509876543' },
+        { id: 'drv_2', name: 'محمد راشد الزعابي', rating: 4.88, trips: 890, vehicle: 'COOLING_VAN', plate: 'دبي A-23411', asateel: true, phone: '+971524455667' },
+        { id: 'drv_3', name: 'طارق كمال', rating: 4.91, trips: 2150, vehicle: 'INSULATED_BIKE', plate: 'الشارقة 3-1198', asateel: true, phone: '+971556677889' },
+        { id: 'drv_4', name: 'عبدالله المنصوري', rating: 4.98, trips: 1120, vehicle: 'SUV_TRANSPORT', plate: 'أبوظبي 12-7788', asateel: true, phone: '+971508899001' },
+        { id: 'drv_5', name: 'سالم الظاهري', rating: 4.85, trips: 540, vehicle: 'AC_SEDAN', plate: 'العين 4-9012', asateel: true, phone: '+971561122334' },
+      ],
+      chats: {},
+      notifications: [],
+      counters: { orderSeq: 100, bidSeq: 100 },
+    };
+    this.save(data);
+    return data;
+  },
+  get() { return this.load(); },
+  update(fn) { const d = this.load(); fn(d); this.save(d); return d; },
+
+  // المستخدمون
+  findUser(phone) { return this.load().users.find(u => u.phone === phone); },
+  addUser(user) { this.update(d => d.users.push(user)); return user; },
+
+  // الطلبات
+  getOrders() { return this.load().orders; },
+  getOrder(id) { return this.load().orders.find(o => o.id === id); },
+  addOrder(order) { this.update(d => d.orders.unshift(order)); return order; },
+  updateOrder(id, fn) { this.update(d => { const o = d.orders.find(x => x.id === id); if (o) fn(o); }); },
+
+  // العروض
+  getBids(orderId) { return this.load().bids.filter(b => b.orderId === orderId); },
+  addBid(bid) { this.update(d => d.bids.push(bid)); return bid; },
+  updateBid(id, fn) { this.update(d => { const b = d.bids.find(x => x.id === id); if (b) fn(b); }); },
+
+  // الدردشة
+  getChat(orderId) { return this.load().chats[orderId] || []; },
+  addChat(orderId, msg) { this.update(d => { if (!d.chats[orderId]) d.chats[orderId] = []; d.chats[orderId].push(msg); }); },
+
+  // الإشعارات
+  getNotifications() { return this.load().notifications; },
+  addNotification(n) { this.update(d => d.notifications.unshift(n)); },
+
+  // السائقون
+  getDrivers() { return this.load().drivers; },
+  getDriver(id) { return this.load().drivers.find(d => d.id === id); },
+
+  nextId(prefix) { const d = this.load(); d.counters[prefix + 'Seq'] = (d.counters[prefix + 'Seq'] || 100) + 1; this.save(d); return d.counters[prefix + 'Seq']; },
+};
+
+// ============== الإشعارات (WebSocket Simulation) ==============
+const Notify = {
+  bus: new EventTarget(),
+
+  init() {
+    // مراقبة الطلبات النشطة لإشعار التاجر بالعروض الجديدة
+    this.bus.addEventListener('bid:new', e => this.onNewBid(e.detail));
+    this.bus.addEventListener('bid:accepted', e => this.onBidAccepted(e.detail));
+    this.bus.addEventListener('status:changed', e => this.onStatusChanged(e.detail));
+    this.bus.addEventListener('chat:message', e => this.onChatMessage(e.detail));
+  },
+
+  publish(event, data) { this.bus.dispatchEvent(new CustomEvent(event, { detail: data })); },
+
+  onNewBid({ orderId, bid }) {
+    const order = DB.getOrder(orderId);
+    if (!order) return;
+    // إشعار التاجر
+    const notif = {
+      id: 'n_' + Date.now() + Math.random(),
+      type: 'bid_new',
+      title: 'عرض سعر جديد! 🎉',
+      body: `${bid.driverName} قدّم عرض ${bid.offeredPrice} د.إ على طلب "${order.title}"`,
+      orderId, timestamp: Date.now(), read: false,
+    };
+    DB.addNotification(notif);
+    this.toast(notif.title, 'gold');
+    this.updateBadges();
+    this.refreshPanel();
+  },
+
+  onBidAccepted({ orderId, bid }) {
+    const notif = {
+      id: 'n_' + Date.now(),
+      type: 'bid_accepted',
+      title: 'تم قبول عرضك! ✅',
+      body: `قبل التاجر عرضك بقيمة ${bid.offeredPrice} د.إ. تم قفل السعر والمسار.`,
+      orderId, timestamp: Date.now(), read: false,
+    };
+    DB.addNotification(notif);
+    this.toast(notif.title, 'emerald');
+    this.updateBadges();
+    this.refreshPanel();
+    this.beep();
+  },
+
+  onStatusChanged({ orderId, status }) {
+    const order = DB.getOrder(orderId);
+    if (!order) return;
+    const notif = {
+      id: 'n_' + Date.now(),
+      type: 'status',
+      title: 'تحديث حالة الرحلة',
+      body: `الطلب "${order.title}" — ${ORDER_STATUS[status]?.ar || status}`,
+      orderId, timestamp: Date.now(), read: false,
+    };
+    DB.addNotification(notif);
+    this.toast(notif.body, 'info');
+    this.updateBadges();
+  },
+
+  onChatMessage({ orderId, msg }) {
+    const notif = {
+      id: 'n_' + Date.now(),
+      type: 'chat',
+      title: `رسالة من ${msg.senderName}`,
+      body: msg.text,
+      orderId, timestamp: Date.now(), read: false,
+    };
+    DB.addNotification(notif);
+    this.updateBadges();
+  },
+
+  toast(message, color = 'primaryGreen') {
+    const colors = { primaryGreen: 'bg-primaryGreen', gold: 'bg-gold text-primaryGreenDark', emerald: 'bg-emerald-600', info: 'bg-info', danger: 'bg-danger', warning: 'bg-warning' };
+    const el = document.createElement('div');
+    el.className = `toast-in ${colors[color] || colors.primaryGreen} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-semibold pointer-events-auto`;
+    el.innerHTML = `<i class="fa-solid fa-bell ml-2"></i>${message}`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3500);
+  },
+
+  updateBadges() {
+    const unread = DB.getNotifications().filter(n => !n.read).length;
+    ['bellBadge', 'driverBellBadge'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (unread > 0) { el.textContent = unread > 9 ? '9+' : unread; el.classList.remove('hidden'); el.classList.add('notification-badge'); }
+        else el.classList.add('hidden');
+      }
+    });
+  },
+
+  refreshPanel() {
+    const list = document.getElementById('notificationsList');
+    if (!list) return;
+    const notifs = DB.getNotifications().slice(0, 30);
+    if (notifs.length === 0) {
+      list.innerHTML = '<div class="text-center text-textSecondary text-xs py-8">لا توجد إشعارات</div>';
+      return;
+    }
+    list.innerHTML = notifs.map(n => `
+      <div class="p-3 rounded-xl ${n.read ? 'bg-gray-50' : 'bg-primaryGreenLight'} border border-gray-200 cursor-pointer" onclick="Nav.openOrder('${n.orderId}'); Nav.closeModal();">
+        <div class="flex justify-between items-start mb-1">
+          <div class="font-bold text-xs text-gray-900">${n.title}</div>
+          <div class="text-[10px] text-textSecondary">${this.timeAgo(n.timestamp)}</div>
+        </div>
+        <div class="text-xs text-textSecondary">${n.body}</div>
+      </div>
+    `).join('');
+  },
+
+  togglePanel() { Nav.openModal('modalNotifications'); this.refreshPanel(); },
+  markAllRead() { DB.update(d => d.notifications.forEach(n => n.read = true)); this.updateBadges(); this.refreshPanel(); },
+
+  timeAgo(ts) {
+    const diff = (Date.now() - ts) / 1000;
+    if (diff < 60) return 'الآن';
+    if (diff < 3600) return Math.floor(diff / 60) + ' د';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' س';
+    return Math.floor(diff / 86400) + ' ي';
+  },
+
+  beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {}
+  },
+};
+
+// ============== التنقل ==============
+const Nav = {
+  screens: ['SPLASH', 'LOGIN', 'OTP', 'ROLE_SELECTION', 'CUSTOMER_HOME', 'CREATE_ORDER', 'ORDER_DETAILS', 'LIVE_TRACKING', 'DRIVER_HOME', 'PLACE_BID', 'COMPLIANCE'],
+
+  // جدول مباشر لمعرفات الشاشات — يمنع أي خطأ في تحويل الأحرف
+  ID_MAP: {
+    SPLASH: 'screenSplash',
+    LOGIN: 'screenLogin',
+    OTP: 'screenOTP',
+    ROLE_SELECTION: 'screenRoleSelection',
+    CUSTOMER_HOME: 'screenCustomerHome',
+    CREATE_ORDER: 'screenCreateOrder',
+    ORDER_DETAILS: 'screenOrderDetails',
+    LIVE_TRACKING: 'screenLiveTracking',
+    DRIVER_HOME: 'screenDriverHome',
+    PLACE_BID: 'screenPlaceBid',
+    COMPLIANCE: 'screenCompliance',
+  },
+
+  go(screen) {
+    State.prevScreen = State.screen;
+    State.screen = screen;
+    // إخفاء كل الشاشات باستخدام جدول المعرفات المباشر
+    this.screens.forEach(s => {
+      const el = document.getElementById(this.ID_MAP[s]);
+      if (el) el.classList.add('hidden');
+    });
+    // إظهار الشاشة المطلوبة
+    const target = document.getElementById(this.ID_MAP[screen]);
+    if (target) {
+      target.classList.remove('hidden');
+      // إعادة تشغيل أنيميشن الشاشة
+      target.style.animation = 'none';
+      void target.offsetHeight;
+      target.style.animation = '';
+    } else {
+      console.error('الشاشة غير موجودة:', screen, '→ ID المطلوب:', this.ID_MAP[screen]);
+    }
+    // إعادة تصيير المحتوى الديناميكي
+    this.onEnter(screen);
+    window.scrollTo(0, 0);
+  },
+
+  back() {
+    if (State.prevScreen) this.go(State.prevScreen);
+    else if (State.role === 'CUSTOMER') this.go('CUSTOMER_HOME');
+    else if (State.role === 'DRIVER') this.go('DRIVER_HOME');
+    else this.go('SPLASH');
+  },
+
+  openModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+  },
+  closeModal() {
+    ['modalPin', 'modalNotifications'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+    });
+  },
+
+  openOrder(orderId) {
+    State.activeOrderId = orderId;
+    this.go('ORDER_DETAILS');
+  },
+
+  onEnter(screen) {
+    switch (screen) {
+      case 'CUSTOMER_HOME': Orders.renderCustomerHome(); break;
+      case 'CREATE_ORDER': Orders.renderCreateForm(); break;
+      case 'ORDER_DETAILS': Orders.renderDetails(); break;
+      case 'LIVE_TRACKING': LiveTracking.start(); break;
+      case 'DRIVER_HOME': Orders.renderDriverHome(); break;
+      case 'PLACE_BID': Bidding.renderPlaceBid(); break;
+      case 'COMPLIANCE': Compliance.render(); break;
+    }
+  },
+};
+
+// ============== المصادقة ==============
+const Auth = {
+  // تحويل أي صيغة هاتف إماراتي إلى الصيغة القياسية 5XXXXXXXX
+  normalizePhone(raw) {
+    if (!raw) return '';
+    // إزالة كل ما هو غير رقم
+    let digits = String(raw).replace(/\D/g, '');
+    // إزالة مفتاح الدولة إذا أُدخل
+    if (digits.startsWith('971')) digits = digits.slice(3);
+    if (digits.startsWith('0')) digits = digits.slice(1);
+    return digits;
+  },
+
+  showFieldError(fieldId, msg) {
+    let el = document.getElementById(fieldId + 'Error');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = fieldId + 'Error';
+      el.className = 'text-[11px] text-danger mt-1.5 font-bold';
+      const field = document.getElementById(fieldId);
+      if (field && field.parentNode) field.parentNode.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  },
+
+  sendOTP() {
+    try {
+      const raw = document.getElementById('inpPhone').value;
+      const phone = this.normalizePhone(raw);
+      // قبول أي رقم إماراتي يبدأ بـ 5 وطوله 9 أرقام، أو 0 بعد المفتاح
+      if (!/^5\d{8}$/.test(phone)) {
+        this.showFieldError('inpPhone', 'أدخل رقماً إماراتياً صحيحاً. مثال: 501234567 أو +971501234567');
+        Notify.toast('رقم الهاتف غير صحيح', 'danger');
+        return;
+      }
+      State.pendingPhone = '+971' + phone;
+      State.pendingOTP = String(Math.floor(1000 + Math.random() * 9000));
+      document.getElementById('otpPhoneDisplay').textContent = State.pendingPhone;
+      document.getElementById('inpOTP').value = '';
+      // وضع التجربة: إظهار الرمز في صندوق ذهبي واضح
+      const hint = document.getElementById('otpHintBox');
+      document.getElementById('otpHintCode').textContent = State.pendingOTP;
+      hint.classList.remove('hidden');
+      Nav.go('OTP');
+      Notify.toast('تم إرسال رمز التحقق بنجاح', 'info');
+    } catch (err) {
+      console.error('sendOTP error:', err);
+      alert('حدث خطأ تقني: ' + err.message + '. يرجى المحاولة مرة أخرى.');
+    }
+  },
+
+  resendOTP() {
+    State.pendingOTP = String(Math.floor(1000 + Math.random() * 9000));
+    document.getElementById('otpHintCode').textContent = State.pendingOTP;
+    Notify.toast('تم إعادة إرسال الرمز', 'info');
+  },
+
+  verifyOTP() {
+    try {
+      const entered = String(document.getElementById('inpOTP').value).trim();
+      if (entered.length !== 4) {
+        Notify.toast('الرمز يجب أن يكون 4 أرقام', 'danger');
+        return;
+      }
+      if (entered !== State.pendingOTP) {
+        Notify.toast('الرمز غير صحيح. الرمز الصحيح: ' + State.pendingOTP, 'danger');
+        return;
+      }
+      // إنشاء/تحميل الحساب
+      let user = DB.findUser(State.pendingPhone);
+      if (!user) {
+        user = { id: 'usr_' + Date.now(), phone: State.pendingPhone, name: 'مستخدم ' + State.pendingPhone.slice(-4), role: null, createdAt: Date.now() };
+        DB.addUser(user);
+      }
+      State.user = user;
+      document.getElementById('roleSelName').textContent = user.name;
+      Nav.go('ROLE_SELECTION');
+      Notify.toast('مرحباً بك! تم تسجيل الدخول بنجاح', 'emerald');
+    } catch (err) {
+      console.error('verifyOTP error:', err);
+      alert('خطأ في التحقق: ' + err.message);
+    }
+  },
+
+  // دخول سريع للتجربة بدون OTP — يخلق حساباً فورياً
+  quickDemoLogin() {
+    const phone = '+971500000000';
+    let user = DB.findUser(phone);
+    if (!user) {
+      user = { id: 'usr_demo_' + Date.now(), phone, name: 'مستخدم تجريبي', role: null, createdAt: Date.now(), demo: true };
+      DB.addUser(user);
+    }
+    State.user = user;
+    document.getElementById('roleSelName').textContent = user.name;
+    Nav.go('ROLE_SELECTION');
+    Notify.toast('مرحباً! تم الدخول السريع للتجربة', 'emerald');
+  },
+
+  googleSignIn() {
+    try {
+      if (CONFIG.GOOGLE_CLIENT_ID && window.google && window.google.accounts) {
+        // استخدام Google Identity Services الحقيقي
+        window.google.accounts.id.initialize({ client_id: CONFIG.GOOGLE_CLIENT_ID, callback: this.googleCallback.bind(this) });
+        window.google.accounts.id.prompt();
+      } else {
+        // وضع التجربة — تمرير البروفايل مباشرة بدون btoa (تجنب خطأ الأحرف العربية)
+        Notify.toast('جارٍ تسجيل الدخول عبر Google (وضع التجربة)...', 'info');
+        setTimeout(() => {
+          this.googleCallback({ __demoProfile: { name: 'مستخدم Google', email: 'user@gmail.com', phone: '+971500000001' } });
+        }, 800);
+      }
+    } catch (err) {
+      console.error('googleSignIn error:', err);
+      alert('خطأ في دخول Google: ' + err.message);
+    }
+  },
+
+  googleCallback(response) {
+    try {
+      let profile;
+      if (response.__demoProfile) {
+        // وضع التجربة — بروفايل مباشر
+        profile = response.__demoProfile;
+      } else {
+        // JWT حقيقي من Google
+        const parts = String(response.credential || '').split('.');
+        const payloadStr = parts[1] || parts[0] || '';
+        // فك ترميز base64url مع دعم UTF-8
+        const jsonStr = decodeURIComponent(escape(atob(payloadStr.replace(/-/g, '+').replace(/_/g, '/'))));
+        const payload = JSON.parse(jsonStr);
+        profile = { name: payload.name || 'مستخدم Google', email: payload.email || '', phone: '+971500000001' };
+      }
+      let user = DB.findUser(profile.phone);
+      if (!user) {
+        user = { id: 'usr_' + Date.now(), phone: profile.phone, name: profile.name, role: null, createdAt: Date.now(), google: true, email: profile.email };
+        DB.addUser(user);
+      }
+      State.user = user;
+      document.getElementById('roleSelName').textContent = user.name;
+      Nav.go('ROLE_SELECTION');
+      Notify.toast('تم تسجيل الدخول عبر Google بنجاح', 'emerald');
+    } catch (err) {
+      console.error('googleCallback error:', err);
+      // fallback: إنشاء حساب تجريبي على الأقل بدل التعطل
+      const phone = '+971500000001';
+      let user = DB.findUser(phone) || { id: 'usr_' + Date.now(), phone, name: 'مستخدم Google', role: null, createdAt: Date.now(), google: true };
+      if (!DB.findUser(phone)) DB.addUser(user);
+      State.user = user;
+      document.getElementById('roleSelName').textContent = user.name;
+      Nav.go('ROLE_SELECTION');
+      Notify.toast('تم الدخول (وضع تجريبي)', 'emerald');
+    }
+  },
+
+  selectRole(role) {
+    if (!State.user) return;
+    State.user.role = role;
+    DB.update(d => { const u = d.users.find(x => x.id === State.user.id); if (u) u.role = role; });
+    State.role = role;
+    if (role === 'DRIVER') {
+      // إنشاء ملف سائق تجريبي مرتبط بالمستخدم الحالي
+      const db = DB.load();
+      let myDriver = db.drivers.find(d => d.id === 'drv_me');
+      if (!myDriver) {
+        myDriver = { id: 'drv_me', name: State.user.name, rating: 4.9, trips: 342, vehicle: 'AC_SEDAN', plate: 'دبي ME-001', asateel: true, phone: State.user.phone };
+        DB.update(d => d.drivers.push(myDriver));
+      }
+      State.currentDriver = myDriver;
+      Nav.go('DRIVER_HOME');
+    } else if (role === 'CUSTOMER') {
+      Nav.go('CUSTOMER_HOME');
+    }
+    Notify.toast(`تم تفعيل وضع ${role === 'CUSTOMER' ? 'العميل' : 'السائق'}`, 'primaryGreen');
+  },
+
+  adminLogin() {
+    const code = document.getElementById('inpAdminCode').value.trim();
+    if (code !== 'ADMIN2024') { Notify.toast('رمز الإدارة غير صحيح', 'danger'); return; }
+    State.role = 'ADMIN';
+    State.user = { id: 'admin', name: 'مدير النظام', role: 'ADMIN' };
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('adminContainer').classList.remove('hidden');
+    Admin.show('dashboard');
+  },
+
+  logout() {
+    State.user = null; State.role = null; State.currentDriver = null;
+    document.getElementById('adminContainer').classList.add('hidden');
+    document.getElementById('appContainer').classList.remove('hidden');
+    Nav.go('SPLASH');
+  },
+};
+
+// ============== الطلبات والأسعار ==============
+const Orders = {
+  filter: null,
+
+  calculateDistance(pickup, dropoff) {
+    if (pickup === dropoff) return 18;
+    const diff = Math.abs(EMIRATES[pickup].baseKm - EMIRATES[dropoff].baseKm);
+    return diff === 0 ? 25 : diff;
+  },
+
+  calculateTolls(pickup, dropoff) {
+    let toll = 0;
+    if (pickup === 'DUBAI' || dropoff === 'DUBAI') toll += 8;
+    if (pickup === 'ABU_DHABI' || dropoff === 'ABU_DHABI' || pickup === 'AL_AIN' || dropoff === 'AL_AIN') toll += 4;
+    if ((pickup === 'SHARJAH' && dropoff === 'DUBAI') || (pickup === 'DUBAI' && dropoff === 'SHARJAH')) toll += 4;
+    return toll;
+  },
+
+  calculateFloor(distance, tolls, category) {
+    const base = 20, perKm = distance > 100 ? 0.85 : distance > 50 ? 0.95 : 1.15;
+    const surcharge = CATEGORIES[category]?.surcharge || 0;
+    const total = base + distance * perKm + tolls + surcharge;
+    return Math.max(25, Math.floor(total / 5) * 5);
+  },
+
+  generatePin() { return String(Math.floor(1000 + Math.random() * 9000)); },
+  generateCode(emirate) { return 'WSL-' + Math.floor(1000 + Math.random() * 9000) + '-' + emirate.slice(0, 3); },
+
+  setFilter(cat) {
+    this.filter = cat;
+    document.querySelectorAll('[id^="filterChip_"]').forEach(el => {
+      el.className = 'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ' +
+        (el.id === 'filterChip_' + (cat || 'all') ? 'bg-primaryGreen text-white' : 'bg-gray-100 text-gray-600');
+    });
+    this.renderCustomerHome();
+  },
+
+  renderCustomerHome() {
+    const user = State.user;
+    document.getElementById('custWelcomeText').textContent = 'مرحباً ' + user.name;
+    const myOrders = DB.getOrders().filter(o => o.customerId === user.id);
+    const active = myOrders.filter(o => !['DELIVERED'].includes(o.status)).length;
+    const pending = myOrders.filter(o => o.status === 'WAITING_FOR_BIDS').length;
+    const delivered = myOrders.filter(o => o.status === 'DELIVERED').length;
+    document.getElementById('custActiveOrdersCount').textContent = active;
+    document.getElementById('custPendingBidsCount').textContent = pending;
+    document.getElementById('custDeliveredCount').textContent = delivered;
+    document.getElementById('myOrdersCounter').textContent = `${myOrders.length} طلب`;
+
+    // فلتر التصنيفات
+    const filterContainer = document.querySelector('[onclick="Orders.setFilter(null)"]').parentElement;
+    const existingCats = Array.from(filterContainer.children).filter(el => el.id !== 'filterChip_all');
+    existingCats.forEach(el => el.remove());
+    Object.entries(CATEGORIES).forEach(([key, val]) => {
+      const btn = document.createElement('button');
+      btn.id = 'filterChip_' + key;
+      btn.textContent = val.ar;
+      btn.className = 'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-gray-100 text-gray-600';
+      btn.onclick = () => this.setFilter(key);
+      filterContainer.appendChild(btn);
+    });
+
+    // قائمة الطلبات
+    const list = document.getElementById('customerOrdersList');
+    let filtered = myOrders;
+    if (this.filter) filtered = myOrders.filter(o => o.category === this.filter);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center border border-gray-200">
+        <i class="fa-solid fa-inbox text-4xl text-gray-300 mb-3"></i>
+        <div class="font-bold text-sm text-gray-700">لا توجد طلبات بعد</div>
+        <div class="text-xs text-textSecondary mt-1">اضغط زر "إنشاء طلب جديد" لبدء أول طلب</div>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(o => {
+      const cat = CATEGORIES[o.category];
+      const bidsCount = DB.getBids(o.id).length;
+      const agreed = o.agreedPrice || o.suggestedPrice;
+      return `
+        <div onclick="Nav.openOrder('${o.id}')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition">
+          <div class="flex justify-between items-center mb-2">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${cat.css}"><i class="fa-solid ${cat.icon} ml-1"></i>${cat.ar}</span>
+            ${this.statusBadge(o.status)}
+          </div>
+          <h4 class="font-bold text-sm text-gray-900 mb-1">${o.title}</h4>
+          <p class="text-xs text-textSecondary mb-2"><i class="fa-solid fa-route ml-1"></i>${EMIRATES[o.pickupEmirate].ar} ← ${EMIRATES[o.dropoffEmirate].ar} • ${o.distanceKm} كم</p>
+          <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+            <span class="font-bold text-primaryGreen">${agreed} د.إ</span>
+            ${o.status === 'WAITING_FOR_BIDS' ? `<span class="text-xs font-bold text-goldDark"><i class="fa-solid fa-gavel ml-1"></i>${bidsCount} عروض</span>` : `<span class="text-xs text-textSecondary">${ORDER_STATUS[o.status]?.ar}</span>`}
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  statusBadge(status) {
+    const s = ORDER_STATUS[status];
+    if (!s) return '';
+    const colors = { amber: 'bg-amber-100 text-amber-800', blue: 'bg-blue-100 text-blue-800', purple: 'bg-purple-100 text-purple-800', emerald: 'bg-emerald-100 text-emerald-800' };
+    return `<span class="text-[11px] px-2 py-0.5 rounded font-semibold ${colors[s.color]}">${s.ar}</span>`;
+  },
+
+  renderCreateForm() {
+    // الفئات
+    const catContainer = document.getElementById('createOrderCatChips');
+    let selectedCat = 'GIFTS_PERFUMES';
+    catContainer.innerHTML = Object.entries(CATEGORIES).map(([key, val]) => `
+      <button type="button" onclick="Orders.selectCat('${key}')" id="catBtn_${key}" class="p-2 rounded-xl text-[11px] font-bold border ${key === selectedCat ? 'bg-primaryGreen text-white border-primaryGreen' : 'bg-gray-50 text-gray-700 border-gray-200'}">
+        <i class="fa-solid ${val.icon} block mb-1"></i>${val.ar}
+      </button>
+    `).join('');
+
+    // الإمارات
+    const pSel = document.getElementById('inpPickupEmirate');
+    const dSel = document.getElementById('inpDropoffEmirate');
+    pSel.innerHTML = ''; dSel.innerHTML = '';
+    Object.entries(EMIRATES).forEach(([key, val]) => {
+      pSel.innerHTML += `<option value="${key}">${val.ar}</option>`;
+      dSel.innerHTML += `<option value="${key}">${val.ar}</option>`;
+    });
+    dSel.value = 'SHARJAH';
+
+    // مراقبة التغيير لتحديث المعاينة
+    pSel.onchange = () => this.updatePreview();
+    dSel.onchange = () => this.updatePreview();
+    document.getElementById('inpPrice').oninput = () => this.updatePreview();
+
+    this.selectedCat = 'GIFTS_PERFUMES';
+    this.updatePreview();
+  },
+
+  selectedCat: 'GIFTS_PERFUMES',
+
+  selectCat(key) {
+    this.selectedCat = key;
+    document.querySelectorAll('[id^="catBtn_"]').forEach(el => {
+      const k = el.id.replace('catBtn_', '');
+      el.className = 'p-2 rounded-xl text-[11px] font-bold border ' + (k === key ? 'bg-primaryGreen text-white border-primaryGreen' : 'bg-gray-50 text-gray-700 border-gray-200');
+    });
+    this.updatePreview();
+  },
+
+  updatePreview() {
+    const p = document.getElementById('inpPickupEmirate').value;
+    const d = document.getElementById('inpDropoffEmirate').value;
+    const cat = this.selectedCat;
+    const dist = this.calculateDistance(p, d);
+    const tolls = this.calculateTolls(p, d);
+    const floor = this.calculateFloor(dist, tolls, cat);
+    document.getElementById('prevDistance').textContent = dist + ' كم';
+    document.getElementById('prevTolls').textContent = tolls + ' د.إ';
+    document.getElementById('prevFloor').textContent = floor + ' د.إ';
+    document.getElementById('prevSuggested').textContent = (floor + 15) + ' د.إ';
+
+    // شارات المتطلبات
+    const badges = [];
+    if (CATEGORIES[cat].requiresAC) badges.push('<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold"><i class="fa-solid fa-snowflake"></i> مكيف</span>');
+    if (CATEGORIES[cat].requiresPin) badges.push('<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded font-bold"><i class="fa-solid fa-lock"></i> PIN</span>');
+    badges.push('<span class="text-[10px] bg-goldLight text-goldDark px-2 py-1 rounded font-bold"><i class="fa-solid fa-bolt"></i> 24/7</span>');
+    document.getElementById('createReqBadges').innerHTML = badges.join('');
+  },
+
+  handleCreate(e) {
+    e.preventDefault();
+    const title = document.getElementById('inpTitle').value.trim();
+    const desc = document.getElementById('inpDescription').value.trim() || CATEGORIES[this.selectedCat].ar;
+    const pEm = document.getElementById('inpPickupEmirate').value;
+    const dEm = document.getElementById('inpDropoffEmirate').value;
+    const pAddr = document.getElementById('inpPickupAddr').value.trim();
+    const dAddr = document.getElementById('inpDropoffAddr').value.trim();
+    const price = parseFloat(document.getElementById('inpPrice').value);
+
+    const dist = this.calculateDistance(pEm, dEm);
+    const tolls = this.calculateTolls(pEm, dEm);
+    const floor = this.calculateFloor(dist, tolls, this.selectedCat);
+
+    if (price < floor) {
+      Notify.toast(`السعر يجب ألا يقل عن ${floor} د.إ (الحد الأدنى الديناميكي)`, 'danger');
+      return;
+    }
+
+    const order = {
+      id: 'ord_' + DB.nextId('order'),
+      trackingCode: this.generateCode(pEm),
+      customerId: State.user.id,
+      customerName: State.user.name,
+      category: this.selectedCat,
+      title, description: desc,
+      pickupEmirate: pEm, pickupAddress: pAddr,
+      dropoffEmirate: dEm, dropoffAddress: dAddr,
+      distanceKm: dist, estimatedTolls: tolls,
+      dynamicFloorPrice: floor, suggestedPrice: price, agreedPrice: null,
+      deliveryPin: this.generatePin(),
+      status: 'WAITING_FOR_BIDS',
+      createdAt: Date.now(),
+      selectedBidId: null,
+    };
+    DB.addOrder(order);
+    State.activeOrderId = order.id;
+    Notify.toast('🚀 تم نشر الطلب بنجاح!', 'emerald');
+
+    // جدولة عروض تنافسية تلقائية
+    Bidding.simulateIncoming(order.id, price);
+
+    Nav.go('ORDER_DETAILS');
+  },
+
+  renderDetails() {
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order) { Nav.back(); return; }
+    const cat = CATEGORIES[order.category];
+    const isMerchant = State.role === 'CUSTOMER';
+    const isDriver = State.role === 'DRIVER';
+
+    document.getElementById('dtlTrackingCode').textContent = order.trackingCode;
+    const cb = document.getElementById('dtlCategoryBadge');
+    cb.className = 'px-2.5 py-1 rounded-full text-xs font-bold ' + cat.css;
+    cb.innerHTML = `<i class="fa-solid ${cat.icon} ml-1"></i>${cat.ar}`;
+    document.getElementById('dtlStatusBadge').innerHTML = this.statusBadge(order.status);
+    document.getElementById('dtlTitle').textContent = order.title;
+    document.getElementById('dtlDesc').textContent = order.description;
+    document.getElementById('dtlFrom').textContent = `${EMIRATES[order.pickupEmirate].ar} — ${order.pickupAddress}`;
+    document.getElementById('dtlTo').textContent = `${EMIRATES[order.dropoffEmirate].ar} — ${order.dropoffAddress}`;
+    document.getElementById('dtlDistance').textContent = order.distanceKm + ' كم';
+    document.getElementById('dtlTolls').textContent = order.estimatedTolls + ' د.إ';
+    document.getElementById('dtlFloor').textContent = order.dynamicFloorPrice + ' د.إ';
+    document.getElementById('dtlSuggested').textContent = (order.agreedPrice || order.suggestedPrice) + ' د.إ';
+
+    // السائق المختار
+    const selCard = document.getElementById('selectedDriverCard');
+    if (order.selectedBidId) {
+      const bid = DB.getBids(order.id).find(b => b.id === order.selectedBidId);
+      if (bid) {
+        const driver = DB.getDriver(bid.driverId);
+        selCard.classList.remove('hidden');
+        document.getElementById('selDriverName').textContent = bid.driverName;
+        document.getElementById('selDriverRating').innerHTML = `<span class="text-gold font-bold">★ ${bid.driverRating}</span> • ${bid.driverTrips} رحلة${driver?.asateel ? ' • <i class="fa-solid fa-circle-check text-emerald-600"></i> معتمد أساطيل' : ''}`;
+        document.getElementById('selDriverVehicle').textContent = `${VEHICLES[driver?.vehicle || 'AC_SEDAN'].ar} • ${driver?.plate || ''}`;
+        document.getElementById('selDriverPrice').textContent = bid.offeredPrice + ' د.إ';
+        document.getElementById('selDriverEta').textContent = bid.estimatedMinutes + ' دقيقة';
+      }
+    } else {
+      selCard.classList.add('hidden');
+    }
+
+    // شريط المراحل
+    const stepper = document.getElementById('statusStepper');
+    if (order.status !== 'WAITING_FOR_BIDS') {
+      stepper.classList.remove('hidden');
+      const steps = ['WAITING_FOR_BIDS', 'BID_ACCEPTED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'];
+      const labels = ['المزايدة', 'قفل', 'استلام', 'في الطريق', 'تسليم'];
+      document.getElementById('stepperContent').innerHTML = steps.map((s, i) => {
+        const isDone = ORDER_STATUS[order.status].idx > ORDER_STATUS[s].idx;
+        const isCurrent = ORDER_STATUS[order.status].idx === ORDER_STATUS[s].idx;
+        const color = isCurrent ? 'bg-gold text-primaryGreenDark' : isDone ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-400';
+        return `<div class="flex-1 text-center">
+          <div class="w-8 h-8 ${color} rounded-full mx-auto flex items-center justify-center text-xs font-bold mb-1">${isDone ? '<i class="fa-solid fa-check"></i>' : i + 1}</div>
+          <div class="text-[10px] ${isCurrent ? 'font-bold text-primaryGreen' : 'text-gray-500'}">${labels[i]}</div>
+        </div>`;
+      }).join('');
+    } else {
+      stepper.classList.add('hidden');
+    }
+
+    // أزرار التحكم
+    const actionBtns = document.getElementById('actionButtons');
+    actionBtns.innerHTML = '';
+    if (order.selectedBidId) {
+      const canAdvance = ['BID_ACCEPTED', 'DRIVER_EN_ROUTE_PICKUP', 'PICKED_UP'].includes(order.status);
+      if (canAdvance) {
+        actionBtns.innerHTML = `<button onclick="Orders.advance()" class="w-full bg-primaryGreen hover:bg-primaryGreenDark text-white font-bold py-3 rounded-xl text-sm">
+          <i class="fa-solid fa-truck ml-1"></i> تحديث حالة الرحلة
+        </button>`;
+      }
+      if (order.status === 'IN_TRANSIT' && isMerchant) {
+        actionBtns.innerHTML += `<button onclick="Nav.openModal('modalPin')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm">
+          <i class="fa-solid fa-lock ml-1"></i> تأكيد التسليم برمز التحقق
+        </button>`;
+      }
+      // زر التتبع المباشر
+      document.getElementById('btnLiveTrack').classList.remove('hidden');
+    } else {
+      document.getElementById('btnLiveTrack').classList.add('hidden');
+    }
+
+    // العروض (للتاجر)
+    const bidsSection = document.getElementById('bidsSection');
+    const driverBidCard = document.getElementById('driverPlaceBidCard');
+    if (isMerchant && order.status === 'WAITING_FOR_BIDS') {
+      bidsSection.classList.remove('hidden');
+      driverBidCard.classList.add('hidden');
+      const bids = DB.getBids(order.id).sort((a, b) => a.offeredPrice - b.offeredPrice);
+      document.getElementById('dtlBidsCount').textContent = bids.length;
+      const bidsList = document.getElementById('orderDetailsBidsList');
+      if (bids.length === 0) {
+        bidsList.innerHTML = `<div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-center text-xs text-amber-800">
+          <i class="fa-solid fa-clock mb-1"></i><div>بانتظار وصول أول عرض من السائقين...</div>
+        </div>`;
+      } else {
+        bidsList.innerHTML = bids.map((b, i) => `
+          <div class="p-3.5 rounded-2xl border ${b.isSelected ? 'bg-bidHighlight border-emerald-400' : i === 0 ? 'bg-goldLight/30 border-gold' : 'bg-white border-gray-200'} shadow-sm">
+            <div class="flex justify-between items-start mb-1.5">
+              <div>
+                <div class="font-bold text-sm text-gray-900">${b.driverName} ${i === 0 ? '<span class="text-[9px] bg-gold text-primaryGreenDark px-1.5 py-0.5 rounded font-bold">الأفضل</span>' : ''}</div>
+                <div class="text-xs text-textSecondary"><span class="text-gold font-bold">★ ${b.driverRating}</span> • ${b.driverTrips} رحلة</div>
+              </div>
+              <div class="text-left">
+                <div class="text-base font-extrabold text-primaryGreen">${b.offeredPrice} د.إ</div>
+                <div class="text-[11px] text-textSecondary">${b.estimatedMinutes} دقيقة</div>
+              </div>
+            </div>
+            ${b.message ? `<p class="text-xs text-textSecondary italic mt-1 bg-gray-50 p-2 rounded-lg">"${b.message}"</p>` : ''}
+            ${order.status === 'WAITING_FOR_BIDS' && !b.isSelected ? `<button onclick="Bidding.accept('${b.id}')" class="w-full mt-2 bg-primaryGreen hover:bg-primaryGreenDark text-white font-bold py-2 rounded-xl text-xs">قبول العرض وقفل السعر</button>` : ''}
+          </div>
+        `).join('');
+      }
+    } else if (isDriver && order.status === 'WAITING_FOR_BIDS') {
+      bidsSection.classList.add('hidden');
+      driverBidCard.classList.remove('hidden');
+      document.getElementById('bidTargetPrice').textContent = order.suggestedPrice + ' د.إ';
+    } else {
+      bidsSection.classList.add('hidden');
+      driverBidCard.classList.add('hidden');
+    }
+  },
+
+  advance() {
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order || !order.selectedBidId) return;
+    const seq = ['BID_ACCEPTED', 'DRIVER_EN_ROUTE_PICKUP', 'PICKED_UP', 'IN_TRANSIT'];
+    const idx = seq.indexOf(order.status);
+    if (idx < 0 || idx >= seq.length - 1) return;
+    const next = seq[idx + 1];
+    DB.updateOrder(order.id, o => o.status = next);
+    Notify.publish('status:changed', { orderId: order.id, status: next });
+    // بدء محاكاة حركة الكابتن عند IN_TRANSIT
+    if (next === 'IN_TRANSIT') LiveTracking.startSimulation(order.id);
+    this.renderDetails();
+  },
+
+  verifyPin() {
+    const entered = document.getElementById('inpPin').value.trim();
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order) return;
+    const errEl = document.getElementById('pinError');
+    if (entered !== order.deliveryPin) {
+      errEl.textContent = 'الرمز غير صحيح، يرجى التأكد من المستلم';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    DB.updateOrder(order.id, o => o.status = 'DELIVERED');
+    Notify.publish('status:changed', { orderId: order.id, status: 'DELIVERED' });
+    Nav.closeModal();
+    document.getElementById('inpPin').value = '';
+    errEl.classList.add('hidden');
+    Notify.toast('✅ تم التسليم بنجاح وتحرير مستحقات الكابتن!', 'emerald');
+    this.renderDetails();
+  },
+
+  renderDriverHome() {
+    const driver = State.currentDriver;
+    if (!driver) return;
+    document.getElementById('driverWelcomeText').textContent = driver.name;
+    document.getElementById('driverStatRating').textContent = driver.rating;
+    document.getElementById('driverStatTrips').textContent = driver.trips;
+    const available = DB.getOrders().filter(o => o.status === 'WAITING_FOR_BIDS');
+    document.getElementById('driverStatAvailable').textContent = available.length;
+    document.getElementById('availableCounter').textContent = `${available.length} طلب`;
+
+    const list = document.getElementById('driverOrdersList');
+    if (available.length === 0) {
+      list.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center border border-gray-200">
+        <i class="fa-solid fa-mug-hot text-4xl text-gray-300 mb-3"></i>
+        <div class="font-bold text-sm text-gray-700">لا توجد طلبات متاحة حالياً</div>
+        <div class="text-xs text-textSecondary mt-1">انتظر وصول طلبات جديدة من التجار</div>
+      </div>`;
+      return;
+    }
+    list.innerHTML = available.map(o => {
+      const cat = CATEGORIES[o.category];
+      const existingBids = DB.getBids(o.id);
+      const myBid = existingBids.find(b => b.driverId === 'drv_me');
+      return `
+        <div onclick="Nav.openOrder('${o.id}')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition">
+          <div class="flex justify-between items-center mb-2">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${cat.css}"><i class="fa-solid ${cat.icon} ml-1"></i>${cat.ar}</span>
+            <span class="font-extrabold text-primaryGreen text-sm">${o.suggestedPrice} د.إ</span>
+          </div>
+          <h4 class="font-bold text-sm text-gray-900 mb-1">${o.title}</h4>
+          <p class="text-xs text-textSecondary mb-1"><i class="fa-solid fa-route ml-1"></i>${EMIRATES[o.pickupEmirate].ar} ← ${EMIRATES[o.dropoffEmirate].ar} • ${o.distanceKm} كم</p>
+          <p class="text-xs text-gray-600 mb-2">${o.description.slice(0, 60)}...</p>
+          <div class="flex justify-between items-center pt-2 border-t border-gray-100 text-xs">
+            <span class="text-textSecondary"><i class="fa-solid fa-users ml-1"></i>${existingBids.length} عرض</span>
+            ${myBid ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold">قدّمت: ${myBid.offeredPrice} د.إ</span>` : `<span class="bg-primaryGreen text-white px-3 py-1 rounded font-bold">قدّم عرضك ←</span>`}
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+};
+
+// ============== المزايدة ==============
+const Bidding = {
+  send() {
+    const price = parseFloat(document.getElementById('inpBidOfferedPrice').value);
+    const eta = parseInt(document.getElementById('inpBidEta').value) || 25;
+    const msg = document.getElementById('inpBidMsg').value.trim();
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order) return;
+    if (isNaN(price) || price < order.dynamicFloorPrice) {
+      Notify.toast(`العرض يجب ألا يقل عن ${order.dynamicFloorPrice} د.إ`, 'danger');
+      return;
+    }
+    const driver = State.currentDriver;
+    const bid = {
+      id: 'bid_' + DB.nextId('bid'),
+      orderId: order.id,
+      driverId: driver.id,
+      driverName: driver.name,
+      driverRating: driver.rating,
+      driverTrips: driver.trips,
+      offeredPrice: price,
+      estimatedMinutes: eta,
+      message: msg,
+      isSelected: false,
+      createdAt: Date.now(),
+    };
+    DB.addBid(bid);
+    Notify.toast(`🎉 تم إرسال عرضك بقيمة ${price} د.إ`, 'emerald');
+    Nav.go('DRIVER_HOME');
+  },
+
+  accept(bidId) {
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order) return;
+    DB.update(d => {
+      d.bids.forEach(b => {
+        if (b.orderId === order.id) b.isSelected = (b.id === bidId);
+      });
+      const o = d.orders.find(x => x.id === order.id);
+      if (o) {
+        o.selectedBidId = bidId;
+        o.status = 'BID_ACCEPTED';
+        const bid = d.bids.find(b => b.id === bidId);
+        if (bid) o.agreedPrice = bid.offeredPrice;
+      }
+    });
+    const bid = DB.getBids(order.id).find(b => b.id === bidId);
+    Notify.publish('bid:accepted', { orderId: order.id, bid });
+    Notify.toast(`✅ تم قبول العرض وقفل السعر مع ${bid.driverName}`, 'emerald');
+    Orders.renderDetails();
+  },
+
+  renderPlaceBid() {
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order) return;
+    document.getElementById('bidSummaryTitle').textContent = order.title;
+    document.getElementById('bidSummaryRoute').innerHTML = `<i class="fa-solid fa-route ml-1"></i>${EMIRATES[order.pickupEmirate].ar} ← ${EMIRATES[order.dropoffEmirate].ar}`;
+    document.getElementById('bidSummaryPrice').textContent = order.suggestedPrice + ' د.إ';
+    document.getElementById('bidSummaryFloor').textContent = `السعر الأدنى: ${order.dynamicFloorPrice} د.إ`;
+    const bids = DB.getBids(order.id);
+    if (bids.length > 0) {
+      const min = Math.min(...bids.map(b => b.offeredPrice));
+      document.getElementById('bidSummaryLowest').textContent = `أقل عرض حالي: ${min} د.إ`;
+    } else {
+      document.getElementById('bidSummaryLowest').textContent = 'كن أول من يقدّم عرضاً!';
+    }
+    const driver = State.currentDriver;
+    document.getElementById('driverProfileCardName').textContent = driver.name;
+    document.getElementById('driverProfileRating').textContent = driver.rating;
+    document.getElementById('driverProfileTrips').textContent = driver.trips;
+    document.getElementById('inpBidOfferedPrice').value = order.suggestedPrice;
+    document.getElementById('inpBidEta').value = 25;
+    document.getElementById('inpBidMsg').value = '';
+  },
+
+  // محاكاة عروض تنافسية تلقائية عند إنشاء طلب جديد
+  simulateIncoming(orderId, targetPrice) {
+    const order = DB.getOrder(orderId);
+    if (!order) return;
+    const eligibleDrivers = DB.getDrivers().filter(d => d.id !== 'drv_me');
+    const shuffled = eligibleDrivers.sort(() => Math.random() - 0.5).slice(0, 3);
+
+    shuffled.forEach((driver, idx) => {
+      const delay = (idx + 1) * 1800;
+      setTimeout(() => {
+        const variance = [0, 5, -5, 10][idx % 4];
+        const amount = Math.max(order.dynamicFloorPrice, targetPrice + variance);
+        const bid = {
+          id: 'bid_' + DB.nextId('bid'),
+          orderId,
+          driverId: driver.id,
+          driverName: driver.name,
+          driverRating: driver.rating,
+          driverTrips: driver.trips,
+          offeredPrice: amount,
+          estimatedMinutes: Math.floor(Math.random() * 25) + 10,
+          message: this.randomNote(driver.vehicle),
+          isSelected: false,
+          createdAt: Date.now(),
+        };
+        DB.addBid(bid);
+        Notify.publish('bid:new', { orderId, bid });
+        // إعادة التصيير إذا كانت شاشة التفاصيل مفتوحة
+        if (State.screen === 'ORDER_DETAILS' && State.activeOrderId === orderId) {
+          Orders.renderDetails();
+        }
+      }, delay);
+    });
+  },
+
+  randomNote(vehicle) {
+    const notes = {
+      AC_SEDAN: ['سيارة مكيفة متاحة فوراً، سأصل خلال دقائق.', 'كابتن معتمد أساطيل، جاهز للتوصيل الآمن.'],
+      COOLING_VAN: ['فان مبرد بدرجة 18°C مثالي للشوكولاتة والتمور.', 'مركبة تبريد احترافية، خبرة في البضائع الحساسة.'],
+      INSULATED_BIKE: ['دراجة سريعة بصندوق FRP معزول، وصول خلال دقائق.', 'أسرع خيار للمسافات القصيرة داخل المدينة.'],
+      SUV_TRANSPORT: ['سيارة SUV رحبة ومكيفة، مناسبة للطرود الكبيرة والحيوانات.', 'كابتن SUV معتمد، تعامل احترافي مع البضائع القيمة.'],
+    };
+    const arr = notes[vehicle] || ['متاح فوراً.'];
+    return arr[Math.floor(Math.random() * arr.length)];
+  },
+};
+
+// ============== المحادثة ==============
+const Chat = {
+  open() {
+    document.getElementById('chatInputBar').classList.remove('hidden');
+    setTimeout(() => document.getElementById('chatInput').focus(), 100);
+  },
+
+  sendCurrent() {
+    const text = document.getElementById('chatInput').value.trim();
+    if (!text || !State.activeOrderId) return;
+    const order = DB.getOrder(State.activeOrderId);
+    const msg = {
+      id: 'msg_' + Date.now(),
+      orderId: order.id,
+      senderRole: State.role,
+      senderName: State.role === 'CUSTOMER' ? State.user.name : State.currentDriver?.name || 'الكابتن',
+      text,
+      timestamp: Date.now(),
+    };
+    DB.addChat(order.id, msg);
+    Notify.publish('chat:message', { orderId: order.id, msg });
+    document.getElementById('chatInput').value = '';
+    Notify.toast('تم إرسال الرسالة', 'info');
+  },
+};
+
+// ============== التتبع المباشر ==============
+const LiveTracking = {
+  start() {
+    const order = DB.getOrder(State.activeOrderId);
+    if (!order) { Nav.back(); return; }
+    document.getElementById('trackOrderCode').textContent = order.trackingCode;
+    const bid = DB.getBids(order.id).find(b => b.id === order.selectedBidId);
+    const driver = bid ? DB.getDriver(bid.driverId) : null;
+    document.getElementById('trackDriverName').textContent = bid?.driverName || '—';
+    document.getElementById('trackDriverInfo').innerHTML = driver ? `${VEHICLES[driver.vehicle].ar} • ${driver.plate}` : '';
+    document.getElementById('trackETA').textContent = bid?.estimatedMinutes || '—';
+    document.getElementById('trackStatus').textContent = ORDER_STATUS[order.status]?.ar || order.status;
+    document.getElementById('trackPrice').textContent = (order.agreedPrice || order.suggestedPrice) + ' د.إ';
+
+    // محاولة تهيئة Mapbox
+    if (CONFIG.MAPBOX_TOKEN && window.mapboxgl) {
+      this.initMapbox();
+    } else {
+      document.getElementById('cssMap').classList.remove('hidden');
+      document.getElementById('mapboxMap').classList.add('hidden');
+      if (order.status === 'IN_TRANSIT') this.animateCSSDriver();
+    }
+  },
+
+  initMapbox() {
+    document.getElementById('cssMap').classList.add('hidden');
+    document.getElementById('mapboxMap').classList.remove('hidden');
+    mapboxgl.accessToken = CONFIG.MAPBOX_TOKEN;
+    const order = DB.getOrder(State.activeOrderId);
+    const center = [55.27, 25.20]; // دبي افتراضياً
+    if (State.map) State.map.remove();
+    State.map = new mapboxgl.Map({ container: 'mapboxMap', style: 'mapbox://styles/mapbox/streets-v12', center, zoom: 9 });
+    // علامات الاستلام والتسليم
+    new mapboxgl.Marker({ color: '#D4AF37' }).setLngLat(center).setPopup(new mapboxgl.Popup().setText('الاستلام')).addTo(State.map);
+    new mapboxgl.Marker({ color: '#10B981' }).setLngLat([54.37, 24.45]).setPopup(new mapboxgl.Popup().setText('التسليم')).addTo(State.map);
+    if (order.status === 'IN_TRANSIT') {
+      const driverMarker = new mapboxgl.Marker({ color: '#006C35' }).setLngLat(center).addTo(State.map);
+      this.animateMapboxDriver(driverMarker, center, [54.37, 24.45]);
+    }
+  },
+
+  animateMapboxDriver(marker, from, to) {
+    let progress = 0;
+    if (State.driverAnimInterval) clearInterval(State.driverAnimInterval);
+    State.driverAnimInterval = setInterval(() => {
+      progress += 0.02;
+      if (progress >= 1) { clearInterval(State.driverAnimInterval); return; }
+      const lng = from[0] + (to[0] - from[0]) * progress;
+      const lat = from[1] + (to[1] - from[1]) * progress;
+      marker.setLngLat([lng, lat]);
+    }, 200);
+  },
+
+  animateCSSDriver() {
+    const marker = document.getElementById('driverMarker');
+    if (!marker) return;
+    let progress = 0;
+    if (State.driverAnimInterval) clearInterval(State.driverAnimInterval);
+    State.driverAnimInterval = setInterval(() => {
+      progress += 0.02;
+      if (progress >= 1) { clearInterval(State.driverAnimInterval); return; }
+      // منحنى من (40,160) إلى (260,40)
+      const x = 40 + (260 - 40) * progress;
+      const y = 160 + (40 - 160) * progress;
+      marker.setAttribute('transform', `translate(${x},${y})`);
+    }, 200);
+  },
+
+  startSimulation(orderId) {
+    // تبدأ محاكاة حركة الكابتن تلقائياً عند IN_TRANSIT
+    if (State.activeOrderId === orderId && State.screen === 'LIVE_TRACKING') {
+      if (CONFIG.MAPBOX_TOKEN) this.initMapbox(); else this.animateCSSDriver();
+    }
+  },
+};
+
+// ============== لوحة الإدارة ==============
+const Admin = {
+  show(tab) {
+    ['dashboard', 'orders', 'users', 'drivers', 'revenue'].forEach(t => {
+      const el = document.getElementById('adminNav_' + t);
+      if (el) { el.classList.remove('bg-white/10', 'text-white', 'font-bold'); el.classList.add('hover:bg-white/10', 'text-white/80'); }
+    });
+    const active = document.getElementById('adminNav_' + tab);
+    if (active) { active.classList.add('bg-white/10', 'text-white', 'font-bold'); active.classList.remove('hover:bg-white/10', 'text-white/80'); }
+    const content = document.getElementById('adminContent');
+    content.innerHTML = this.render(tab);
+    if (tab === 'revenue') this.renderChart();
+  },
+
+  render(tab) {
+    const db = DB.load();
+    if (tab === 'dashboard') {
+      const totalOrders = db.orders.length;
+      const activeOrders = db.orders.filter(o => !['DELIVERED'].includes(o.status)).length;
+      const delivered = db.orders.filter(o => o.status === 'DELIVERED').length;
+      const revenue = db.orders.filter(o => o.agreedPrice).reduce((s, o) => s + o.agreedPrice, 0);
+      const totalUsers = db.users.length;
+      const totalDrivers = db.drivers.length;
+      return `
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-gray-900">لوحة المعلومات</h1>
+          <p class="text-sm text-gray-500">نظرة عامة على أداء منصة واصل الإمارات</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          ${this.statCard('الطلبيات الكلية', totalOrders, 'fa-box', 'primaryGreen')}
+          ${this.statCard('الطلبيات النشطة', activeOrders, 'fa-clock', 'gold')}
+          ${this.statCard('المكتملة', delivered, 'fa-check-circle', 'emerald')}
+          ${this.statCard('إجمالي الإيرادات', revenue + ' د.إ', 'fa-money-bill', 'emerald')}
+          ${this.statCard('المستخدمون', totalUsers, 'fa-users', 'info')}
+          ${this.statCard('السائقون', totalDrivers, 'fa-motorcycle', 'primaryGreen')}
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm">
+          <h3 class="font-bold text-base mb-3">آخر الطلبيات</h3>
+          <div class="space-y-2">${db.orders.slice(0, 5).map(o => `
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div><div class="font-bold text-sm">${o.title}</div><div class="text-xs text-gray-500">${o.trackingCode} • ${o.customerName}</div></div>
+              <div class="text-left"><div class="font-bold text-primaryGreen">${o.agreedPrice || o.suggestedPrice} د.إ</div>${Orders.statusBadge(o.status)}</div>
+            </div>
+          `).join('')}</div>
+        </div>
+      `;
+    }
+    if (tab === 'orders') {
+      return `
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">إدارة الطلبيات</h1>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-600"><tr>
+              <th class="p-3 text-right">الكود</th><th class="p-3 text-right">العميل</th><th class="p-3 text-right">العنوان</th>
+              <th class="p-3 text-right">المسار</th><th class="p-3 text-right">السعر</th><th class="p-3 text-right">الحالة</th>
+            </tr></thead>
+            <tbody>
+              ${db.orders.map(o => `<tr class="border-t hover:bg-gray-50">
+                <td class="p-3 font-mono text-xs">${o.trackingCode}</td>
+                <td class="p-3">${o.customerName}</td>
+                <td class="p-3 text-xs">${o.title}</td>
+                <td class="p-3 text-xs">${EMIRATES[o.pickupEmirate].ar} ← ${EMIRATES[o.dropoffEmirate].ar}</td>
+                <td class="p-3 font-bold text-primaryGreen">${o.agreedPrice || o.suggestedPrice}</td>
+                <td class="p-3">${Orders.statusBadge(o.status)}</td>
+              </tr>`).join('') || '<tr><td class="p-8 text-center text-gray-400">لا توجد طلبيات</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+    if (tab === 'users') {
+      return `
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">المستخدمون</h1>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-600"><tr>
+              <th class="p-3 text-right">الاسم</th><th class="p-3 text-right">الهاتف</th>
+              <th class="p-3 text-right">الدور</th><th class="p-3 text-right">الطلبات</th><th class="p-3 text-right">تاريخ التسجيل</th>
+            </tr></thead>
+            <tbody>
+              ${db.users.map(u => `<tr class="border-t hover:bg-gray-50">
+                <td class="p-3 font-bold">${u.name}</td>
+                <td class="p-3 font-mono text-xs" dir="ltr">${u.phone}</td>
+                <td class="p-3">${u.role === 'CUSTOMER' ? 'عميل' : u.role === 'DRIVER' ? 'سائق' : '—'}</td>
+                <td class="p-3">${db.orders.filter(o => o.customerId === u.id).length}</td>
+                <td class="p-3 text-xs">${new Date(u.createdAt).toLocaleDateString('ar-AE')}</td>
+              </tr>`).join('') || '<tr><td class="p-8 text-center text-gray-400">لا يوجد مستخدمون</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+    if (tab === 'drivers') {
+      return `
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">السائقون المعتمدون</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${db.drivers.map(d => `
+            <div class="bg-white rounded-xl p-4 shadow-sm">
+              <div class="flex justify-between items-start">
+                <div><div class="font-bold text-sm">${d.name}</div><div class="text-xs text-gray-500" dir="ltr">${d.phone}</div></div>
+                <div class="text-left"><div class="text-gold font-bold">★ ${d.rating}</div><div class="text-xs text-gray-500">${d.trips} رحلة</div></div>
+              </div>
+              <div class="mt-3 pt-3 border-t text-xs space-y-1">
+                <div><strong>المركبة:</strong> ${VEHICLES[d.vehicle]?.ar || d.vehicle}</div>
+                <div><strong>اللوحة:</strong> ${d.plate}</div>
+                <div>${d.asateel ? '<span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> معتمد أساطيل</span>' : '<span class="text-amber-600">بانتظار الاعتماد</span>'}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    if (tab === 'revenue') {
+      const total = db.orders.reduce((s, o) => s + (o.agreedPrice || 0), 0);
+      const pending = db.orders.filter(o => o.status === 'WAITING_FOR_BIDS').reduce((s, o) => s + o.suggestedPrice, 0);
+      return `
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">الإيرادات</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          ${this.statCard('الإيرادات المحققة', total + ' د.إ', 'fa-money-bill-wave', 'emerald')}
+          ${this.statCard('قيد المزايدة', pending + ' د.إ', 'fa-clock', 'gold')}
+          ${this.statCard('متوسط سعر الطلب', db.orders.length ? Math.round(total / db.orders.length) + ' د.إ' : '0 د.إ', 'fa-chart-line', 'info')}
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm"><canvas id="revenueChart" height="80"></canvas></div>
+      `;
+    }
+    return '';
+  },
+
+  statCard(label, value, icon, color) {
+    const colors = { primaryGreen: 'bg-primaryGreenLight text-primaryGreen', gold: 'bg-goldLight text-goldDark', emerald: 'bg-emerald-100 text-emerald-700', info: 'bg-blue-100 text-blue-700' };
+    return `<div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div><div class="text-xs text-gray-500">${label}</div><div class="text-2xl font-bold text-gray-900 mt-1">${value}</div></div>
+        <div class="w-12 h-12 ${colors[color]} rounded-xl flex items-center justify-center"><i class="fa-solid ${icon} text-xl"></i></div>
+      </div>
+    </div>`;
+  },
+
+  renderChart() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+    const db = DB.load();
+    // تجميع الإيرادات حسب الفئة
+    const byCategory = Object.keys(CATEGORIES).map(k => db.orders.filter(o => o.category === k).reduce((s, o) => s + (o.agreedPrice || 0), 0));
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.values(CATEGORIES).map(c => c.ar),
+        datasets: [{ label: 'الإيرادات (د.إ)', data: byCategory, backgroundColor: '#006C35' }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+  },
+};
+
+// ============== دليل الاشتراطات ==============
+const Compliance = {
+  render() {
+    const list = document.getElementById('complianceList');
+    list.innerHTML = COMPLIANCE_CARDS.map(c => `
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 bg-primaryGreenLight rounded-xl flex items-center justify-center text-primaryGreen flex-shrink-0">
+            <i class="fa-solid ${c.icon}"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-sm text-gray-900 mb-1">${c.title}</h4>
+            <p class="text-xs text-gray-600 leading-relaxed">${c.body}</p>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+};
+
+// ============== التهيئة ==============
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    Notify.init();
+    // محاولة تهيئة Google Identity Services فقط إذا كان المعرف والـ SDK متاحين
+    if (CONFIG.GOOGLE_CLIENT_ID && window.google && window.google.accounts && window.google.accounts.id) {
+      window.google.accounts.id.initialize({ client_id: CONFIG.GOOGLE_CLIENT_ID, callback: Auth.googleCallback.bind(Auth) });
+    }
+    // بدء التطبيق
+    Nav.go('SPLASH');
+    Notify.updateBadges();
+    console.log('✅ واصل الإمارات — التطبيق جاهز');
+  } catch (err) {
+    console.error('Init error:', err);
+    document.body.innerHTML = '<div style="padding:20px;font-family:sans-serif;text-align:center;direction:rtl"><h2>حدث خطأ في تحميل التطبيق</h2><p>' + err.message + '</p><button onclick="location.reload()" style="padding:10px 20px;background:#006C35;color:white;border:none;border-radius:8px;margin-top:10px">إعادة المحاولة</button></div>';
+  }
+});
+
+// التقاط أي أخطاء JavaScript غير معالجة لمنع التعطل الصامت
+window.addEventListener('error', (e) => {
+  console.error('Unhandled error:', e.error || e.message);
+});
+
+// إغلاق النوافذ عند النقر خارجها
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('bg-black/50')) {
+    Nav.closeModal();
+  }
+});
+</script>
+
+</body>
+</html>

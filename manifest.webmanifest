@@ -1,0 +1,54 @@
+{
+  "name": "واصل الإمارات — Wasel UAE",
+  "short_name": "واصل",
+  "description": "تطبيق توصيل إماراتي بنظام المزايدة العكسية وتتبع الشحنات لحظياً",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/wasel-uae-app.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E8EDF2",
+  "theme_color": "#006C35",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "إنشاء طلب جديد",
+      "short_name": "طلب جديد",
+      "url": "/wasel-uae-app.html?action=new-order",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "تتبع الطلبات",
+      "short_name": "تتبع",
+      "url": "/wasel-uae-app.html?action=track",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
